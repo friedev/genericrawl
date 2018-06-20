@@ -1,9 +1,9 @@
 import libtcodpy as libtcod
-from entity import Entity
-from input import handle_keys
-from map.game_map import GameMap
-from map.tile import Tile
-from render import render_all, clear_all
+from src.entity import Entity
+from src.input import handle_keys
+from src.map.game_map import GameMap
+from src.map.tile import Tile
+from src.render import render_all, clear_all
 
 
 def main():
