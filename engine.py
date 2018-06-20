@@ -1,12 +1,18 @@
 import libtcodpy as libtcod
 from entity import Entity
 from input import handle_keys
+from map.game_map import GameMap
+from map.tile import Tile
 from render import render_all, clear_all
 
 
 def main():
     screen_width = 80
     screen_height = 50
+    map_width = 80
+    map_height = 45
+    floor = Tile(libtcod.gray, False)
+    wall = Tile(libtcod.dark_orange, True)
 
     player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.white)
     npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', libtcod.yellow)
@@ -18,16 +24,15 @@ def main():
 
     console = libtcod.console_new(screen_width, screen_height)
 
+    game_map = GameMap(map_width, map_height, floor, wall)
+
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
     while not libtcod.console_is_window_closed():
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
-
-        render_all(console, entities, screen_width, screen_height)
-
+        render_all(console, game_map, entities, screen_width, screen_height)
         libtcod.console_flush()
-
+        libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
         clear_all(console, entities)
 
         action = handle_keys(key)
@@ -38,7 +43,7 @@ def main():
 
         if move:
             dx, dy = move
-            player.move(dx, dy)
+            player.move(dx, dy, game_map)
 
         if exit:
             return True
