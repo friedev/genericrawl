@@ -11,8 +11,6 @@ def main():
     screen_height = 50
     map_width = 80
     map_height = 45
-    floor = Tile(libtcod.gray, False)
-    wall = Tile(libtcod.dark_orange, True)
 
     player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.white)
     npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', libtcod.yellow)
@@ -24,7 +22,7 @@ def main():
 
     console = libtcod.console_new(screen_width, screen_height)
 
-    game_map = GameMap(map_width, map_height, floor, wall)
+    game_map = GameMap(map_width, map_height)
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()

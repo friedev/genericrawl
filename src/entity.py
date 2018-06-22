@@ -9,7 +9,7 @@ class Entity:
         self.color = color
 
     def move_to(self, x, y, game_map):
-        if 0 <= x < game_map.width and 0 <= y < game_map.height and not game_map.tiles[x][y].blocked:
+        if 0 <= x < game_map.width and 0 <= y < game_map.height and not game_map.get_tile(x, y).blocked:
             self.x = x
             self.y = y
 

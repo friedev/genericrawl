@@ -5,7 +5,7 @@ def render_all(console, game_map, entities, screen_width, screen_height):
     # Draw all the tiles in the game src.map
     for y in range(game_map.height):
         for x in range(game_map.width):
-            libtcod.console_set_char_background(console, x, y, game_map.tiles[x][y].color, libtcod.BKGND_SET)
+            libtcod.console_set_char_background(console, x, y, game_map.get_tile(x, y).color, libtcod.BKGND_SET)
 
     # Draw all entities in the list
     for entity in entities:
