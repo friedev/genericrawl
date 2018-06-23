@@ -2,20 +2,23 @@ import libtcodpy as libtcod
 from src.map.dungeon_generator import *
 from src.map.tile import Tile
 
-TILE_FLOOR = Tile(libtcod.light_blue, False)
-TILE_WALL = Tile(libtcod.dark_blue, True)
-TILE_DOOR = Tile(libtcod.darker_orange, False)
-TILE_CAVE_FLOOR = Tile(libtcod.gray, False)
-TILE_CAVE_WALL = Tile(libtcod.dark_gray, True)
+TILE_ROOM_FLOOR = Tile(libtcod.light_blue, False)
+TILE_ROOM_WALL = Tile(libtcod.dark_blue, True)
+TILE_CORRIDOR_FLOOR = Tile(libtcod.gray, False)
+TILE_CORRIDOR_WALL = Tile(libtcod.darker_gray, True)
+TILE_DOOR = Tile(libtcod.dark_cyan, False, True)
+TILE_CAVE_FLOOR = Tile(libtcod.darker_orange, False)
+TILE_CAVE_WALL = Tile(libtcod.darkest_orange, True)
+COLOR_UNKNOWN = libtcod.black
 
 int_to_tile = {
     EMPTY:         TILE_CAVE_WALL,
-    FLOOR:         TILE_FLOOR,
-    CORRIDOR:      TILE_CAVE_FLOOR,
+    FLOOR:         TILE_ROOM_FLOOR,
+    CORRIDOR:      TILE_CORRIDOR_FLOOR,
     DOOR:          TILE_DOOR,
-    DEADEND:       TILE_CAVE_FLOOR,
-    ROOM_WALL:     TILE_WALL,
-    CORRIDOR_WALL: TILE_CAVE_WALL,
+    DEADEND:       TILE_CORRIDOR_FLOOR,
+    ROOM_WALL:     TILE_ROOM_WALL,
+    CORRIDOR_WALL: TILE_CORRIDOR_WALL,
     CAVE_WALL:     TILE_CAVE_WALL,
     CAVE:          TILE_CAVE_FLOOR
 }
@@ -30,7 +33,7 @@ class GameMap:
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
         generator = dungeonGenerator(self.height - 2, self.width - 2)
-        generator.generateCaves(40, 4)
+        generator.generateCaves(37, 4)
 
         # Remove small caves
         unconnected = generator.findUnconnectedAreas()
