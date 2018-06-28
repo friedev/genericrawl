@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+from random import choice
 from src.map.dungeon_generator import *
 from src.map.tile import Tile
 
@@ -77,3 +78,13 @@ class GameMap:
 
     def get_tile(self, x, y):
         return int_to_tile.get(self.generator.grid[x][y])
+
+    def find_random_open_tile(self):
+        open_tiles = []
+
+        for x in range(self.generator.width):
+            for y in range(self.generator.height):
+                if not self.get_tile(x, y).blocked:
+                    open_tiles.append((x, y))
+
+        return choice(open_tiles)

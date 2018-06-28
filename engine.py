@@ -15,10 +15,6 @@ def main():
 
     fov_radius = 10
 
-    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.white)
-    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', libtcod.yellow)
-    entities = [npc, player]
-
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
 
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
@@ -26,6 +22,15 @@ def main():
     console = libtcod.console_new(screen_width, screen_height)
 
     game_map = GameMap(map_width, map_height)
+
+    player_tile = game_map.find_random_open_tile()
+    npc_tile = game_map.find_random_open_tile()
+    while npc_tile == player_tile:
+        npc_tile = game_map.find_random_open_tile()
+
+    player = Entity(player_tile[0], player_tile[1], '@', libtcod.white)
+    npc = Entity(npc_tile[0], npc_tile[1], '@', libtcod.yellow)
+    entities = [npc, player]
 
     recompute_fov = True
     fov_map = initialize_fov(game_map)
