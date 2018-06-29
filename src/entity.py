@@ -2,9 +2,11 @@ class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, x, y, char, color):
+
+    def __init__(self, x, y, facing, char, color):
         self.x = x
         self.y = y
+        self.facing = facing
         self.char = char
         self.color = color
 
@@ -17,3 +19,8 @@ class Entity:
 
     def move(self, dx, dy, game_map):
         return self.move_to(self.x + dx, self.y + dy, game_map)
+
+    # This method and the facing field are temporary, and will be replaced by the ECS
+    def face(self, facing):
+        self.facing = facing
+        return True

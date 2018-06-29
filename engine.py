@@ -1,6 +1,6 @@
-import libtcodpy as libtcod
+from math import radians
 from src.entity import Entity
-from src.fov import initialize_fov, compute_fov
+from src.fov import *
 from src.input import handle_keys
 from src.map.game_map import GameMap
 from src.render import render_all, clear_all
@@ -14,6 +14,7 @@ def main():
     map_height = screen_height
 
     fov_radius = 10
+    fov_span = radians(140)
 
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
 
@@ -28,23 +29,23 @@ def main():
     while npc_tile == player_tile:
         npc_tile = game_map.find_random_open_tile()
 
-    player = Entity(player_tile[0], player_tile[1], '@', libtcod.white)
-    npc = Entity(npc_tile[0], npc_tile[1], '@', libtcod.yellow)
+    player = Entity(player_tile[0], player_tile[1], 0.0, '@', libtcod.white)
+    npc = Entity(npc_tile[0], npc_tile[1], 0.0, '@', libtcod.yellow)
     entities = [npc, player]
 
     recompute_fov = True
     fov_map = initialize_fov(game_map)
-
-    memory = [[False for y in range(map_height)] for x in range(map_width)]
+    memory = []
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
     while not libtcod.console_is_window_closed():
         if recompute_fov:
-            compute_fov(fov_map, memory, player.x, player.y, fov_radius)
+            fov = compute_fov_angled(fov_map, player.x, player.y, fov_radius, player.facing, fov_span)
+            update_memory(memory, fov)
 
-        render_all(console, entities, game_map, fov_map, memory, screen_width, screen_height)
+        render_all(console, entities, game_map, fov, memory, screen_width, screen_height)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
         clear_all(console, entities)
@@ -53,13 +54,19 @@ def main():
 
         action = handle_keys(key)
 
-        move = action.get('move')
+        direction = action.get('direction')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
 
-        if move:
-            dx, dy = move
-            if player.move(dx, dy, game_map):
+        if direction:
+            move = action.get('move')
+            face = action.get('face')
+
+            dx, dy = direction
+            if move and player.move(dx, dy, game_map):
+                recompute_fov = True
+
+            if face and player.face(atan2(dy, dx)):
                 recompute_fov = True
 
         if exit:
