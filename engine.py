@@ -7,23 +7,26 @@ from src.render import render_all, clear_all
 
 
 def main():
+    # Size of the screen, in tiles
     screen_width = 80
     screen_height = 50
 
-    map_width = screen_width
-    map_height = screen_height
+    # Size of the map, in tiles
+    map_width = 100
+    map_height = 100
 
+    # The maximum number of tiles that can be seen in any direction, in tiles
     fov_radius = 10
+
+    # The total span of the cone of vision, in radians
     fov_span = radians(140)
 
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
-
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
-
     console = libtcod.console_new(screen_width, screen_height)
-
     game_map = GameMap(map_width, map_height)
 
+    # Place the player and NPC in different locations
     player_tile = game_map.find_random_open_tile()
     npc_tile = game_map.find_random_open_tile()
     while npc_tile == player_tile:
@@ -40,15 +43,17 @@ def main():
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
+    clear_all(console, entities, player.x, player.y, screen_width, screen_height)
+
     while not libtcod.console_is_window_closed():
         if recompute_fov:
             fov = compute_fov_angled(fov_map, player.x, player.y, fov_radius, player.facing, fov_span)
             update_memory(memory, fov)
 
-        render_all(console, entities, game_map, fov, memory, screen_width, screen_height)
+        render_all(console, entities, game_map, fov, memory, player.x, player.y, screen_width, screen_height)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
-        clear_all(console, entities)
+        clear_all(console, entities, player.x, player.y, screen_width, screen_height)
 
         recompute_fov = False
 
