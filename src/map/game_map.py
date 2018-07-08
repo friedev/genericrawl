@@ -11,6 +11,7 @@ TILE_CORRIDOR_WALL = Tile(libtcod.darker_gray, True)
 TILE_DOOR = Tile(libtcod.dark_cyan, False, True)
 TILE_CAVE_FLOOR = Tile(libtcod.darker_orange, False)
 TILE_CAVE_WALL = Tile(libtcod.darkest_orange, True)
+
 COLOR_UNKNOWN = libtcod.black
 
 int_to_tile = {
@@ -79,6 +80,18 @@ class GameMap:
 
         return generator
 
+    def place_entities(self, n_enemies):
+        entity_map = self.generate_entity_map()
+
+        for i in range(n_enemies):
+            tile = self.find_open_tile()
+
+            color = libtcod.yellow if bool(getrandbits(1)) else libtcod.blue
+            entity = Entity(*tile, 'S', color, 'python')
+
+            self.entities.append(entity)
+            entity_map[entity.x][entity.y].append(entity)
+
     def get_tile(self, x, y):
         return int_to_tile.get(self.generator.grid[x][y])
 
@@ -125,18 +138,6 @@ class GameMap:
                     open_tiles.append((x, y))
 
         return choice(open_tiles)
-
-    def place_entities(self, n_enemies):
-        entity_map = self.generate_entity_map()
-
-        for i in range(n_enemies):
-            tile = self.find_open_tile()
-
-            color = libtcod.yellow if bool(getrandbits(1)) else libtcod.blue
-            entity = Entity(*tile, 'S', color, 'python')
-
-            self.entities.append(entity)
-            entity_map[entity.x][entity.y].append(entity)
 
     # Returns a 3D list, where the first two dimensions are the same as the game map
     # The third dimension is a list of the entities in that tile

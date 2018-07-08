@@ -46,7 +46,8 @@ def main():
             fov = compute_fov_angled(fov_map, player.x, player.y, fov_radius, player.facing, fov_span)
             update_memory(memory, fov)
 
-        render_all(console, game_map.entities, game_map, fov, memory, player.x, player.y, screen_width, screen_height)
+        render_all(console, game_map.entities, game_map, fov, memory, fov_radius, player.x, player.y, screen_width,
+                   screen_height)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
         clear_all(console, game_map.entities, player.x, player.y, screen_width, screen_height)

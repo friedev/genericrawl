@@ -1,9 +1,15 @@
-from math import radians
+from math import radians, sqrt
 from random import randint
 
 
 def generate_facing():
     return radians(randint(0, 7) * 45)
+
+
+def distance(x1, y1, x2, y2):
+    dx = x1 - x2
+    dy = y1 - y2
+    return sqrt(dx ** 2 + dy ** 2)
 
 
 class Entity:
@@ -44,3 +50,6 @@ class Entity:
     def face(self, facing):
         self.facing = facing
         return True
+
+    def distance_to(self, other):
+        return distance(self.x, self.y, other.x, other.y)
