@@ -96,7 +96,7 @@ class GameMap:
         if not (0 <= x < self.width and 0 <= y < self.height):
             return False
 
-        if entity_map is None:
+        if not entity_map:
             tile_entities = []
             for entity in self.entities:
                 if entity.x == x and entity.y == y:
@@ -114,7 +114,7 @@ class GameMap:
             return entity_map[x][y]
 
     def find_open_tile(self, entity_map=None):
-        if entity_map is None:
+        if not entity_map:
             entity_map = self.generate_entity_map()
 
         open_tiles = []

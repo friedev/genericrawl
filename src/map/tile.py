@@ -10,12 +10,12 @@ class Tile:
         self.blocks = blocks
 
         # By default, if a tile is blocked, it also blocks sight
-        if blocks_sight is None:
+        if not blocks_sight:
             blocks_sight = blocks
 
         self.blocks_sight = blocks_sight
 
-        if memory_color is None:
+        if not memory_color:
             memory_color = color.__sub__(Color(32, 32, 32))
 
         self.memory_color = memory_color
