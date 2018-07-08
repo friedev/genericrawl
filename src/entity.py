@@ -1,17 +1,37 @@
+from math import radians
+from random import randint
+
+
+def generate_facing():
+    return radians(randint(0, 7) * 45)
+
+
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
 
-    def __init__(self, x, y, facing, char, color):
+    def __init__(self, x, y, char, color, name, facing=generate_facing(), blocks=True, is_name_proper=False):
         self.x = x
         self.y = y
-        self.facing = facing
         self.char = char
         self.color = color
+        self.name = name
+        self.facing = facing
+        self.blocks = blocks
+
+        if is_name_proper:
+            self.definite_name = name
+            self.indefinite_name = name
+        else:
+            self.definite_name = 'the ' + name
+            if name[0].lower() in 'aeiou':
+                self.indefinite_name = 'an ' + name
+            else:
+                self.indefinite_name = 'a ' + name
 
     def move_to(self, x, y, game_map):
-        if 0 <= x < game_map.width and 0 <= y < game_map.height and not game_map.get_tile(x, y).blocked:
+        if game_map.is_tile_open(x, y):
             self.x = x
             self.y = y
             return True

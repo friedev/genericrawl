@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
-from random import choice
+from random import getrandbits
+from src.entity import Entity
 from src.map.dungeon_generator import *
 from src.map.tile import Tile
 
@@ -30,6 +31,8 @@ class GameMap:
         self.width = width
         self.height = height
         self.generator = self.initialize_tiles()
+        self.entities = []
+        self.place_entities(int(width * height / 50))
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
@@ -79,12 +82,66 @@ class GameMap:
     def get_tile(self, x, y):
         return int_to_tile.get(self.generator.grid[x][y])
 
-    def find_random_open_tile(self):
+    def is_tile_open(self, x, y, entity_map=None):
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return False
+
+        if self.get_tile(x, y).blocks:
+            return False
+
+        blocking_entities = self.get_entities_at_tile(x, y, True, entity_map)
+        return len(blocking_entities) == 0
+
+    def get_entities_at_tile(self, x, y, blocking_only=False, entity_map=None):
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return False
+
+        if entity_map is None:
+            tile_entities = []
+            for entity in self.entities:
+                if entity.x == x and entity.y == y:
+                    if blocking_only and not entity.blocks:
+                        continue
+                    tile_entities.append(entity)
+            return tile_entities
+        elif blocking_only:
+            tile_entities = []
+            for entity in entity_map[x][y]:
+                if entity.blocks:
+                    tile_entities.append(entity)
+            return tile_entities
+        else:
+            return entity_map[x][y]
+
+    def find_open_tile(self, entity_map=None):
+        if entity_map is None:
+            entity_map = self.generate_entity_map()
+
         open_tiles = []
 
         for x in range(self.generator.width):
             for y in range(self.generator.height):
-                if not self.get_tile(x, y).blocked:
+                if self.is_tile_open(x, y, entity_map):
                     open_tiles.append((x, y))
 
         return choice(open_tiles)
+
+    def place_entities(self, n_enemies):
+        entity_map = self.generate_entity_map()
+
+        for i in range(n_enemies):
+            tile = self.find_open_tile()
+
+            color = libtcod.yellow if bool(getrandbits(1)) else libtcod.blue
+            entity = Entity(*tile, 'S', color, 'python')
+
+            self.entities.append(entity)
+            entity_map[entity.x][entity.y].append(entity)
+
+    # Returns a 3D list, where the first two dimensions are the same as the game map
+    # The third dimension is a list of the entities in that tile
+    def generate_entity_map(self):
+        entity_map = [[[] for y in range(self.height)] for x in range(self.width)]
+        for entity in self.entities:
+            entity_map[entity.x][entity.y].append(entity)
+        return entity_map

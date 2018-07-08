@@ -7,8 +7,8 @@ def initialize_fov(game_map):
 
     for y in range(game_map.height):
         for x in range(game_map.width):
-            libtcod.map_set_properties(fov_map, x, y, not game_map.get_tile(x, y).block_sight,
-                                       not game_map.get_tile(x, y).blocked)
+            libtcod.map_set_properties(fov_map, x, y, not game_map.get_tile(x, y).blocks_sight,
+                                       not game_map.get_tile(x, y).blocks)
 
     return fov_map
 
