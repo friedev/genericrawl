@@ -47,7 +47,8 @@ chr_key_map = {
     'n': SOUTHEAST,
 
     ' ': {'wait': True},
-    '.': {'wait': True}
+    '.': {'wait': True},
+    'r': {'restart': True}
 }
 
 

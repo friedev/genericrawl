@@ -21,6 +21,12 @@ def main():
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
     console = libtcod.console_new(screen_width, screen_height)
 
+    restart = True
+    while restart:
+        restart = play_game(console, map_width, map_height)
+
+
+def play_game(console, map_width, map_height):
     game_map = GameMap(map_width, map_height)
     player_sight = Sight()
     player_fighter = Fighter(hp=30, defense=2, power=5)
@@ -40,11 +46,12 @@ def main():
         if recompute_fov:
             player.sight.get_fov_angled(game_map.fov_map, memory)
 
-        render_all(console, game_map.entities, player, game_map, memory, player.sight.fov_radius, screen_width,
-                   screen_height)
+        render_all(console, game_map.entities, player, game_map, memory, player.sight.fov_radius,
+                   libtcod.console_get_width(console), libtcod.console_get_height(console))
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
-        clear_all(console, game_map.entities, player, screen_width, screen_height)
+        clear_all(console, game_map.entities, player, libtcod.console_get_width(console),
+                  libtcod.console_get_height(console))
 
         recompute_fov = False
 
@@ -52,6 +59,7 @@ def main():
 
         direction = action.get('direction')
         wait = action.get('wait')
+        restart = action.get('restart')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
 
@@ -82,8 +90,11 @@ def main():
         if wait and game_state == GameStates.PLAYER_TURN:
             player_acted = True
 
-        if exit:
+        if restart and game_state == GameStates.PLAYER_DEAD:
             return True
+
+        if exit:
+            return False
 
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
