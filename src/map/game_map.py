@@ -5,27 +5,7 @@ from components.fighter import Fighter
 from components.sight import Sight
 from entity import Entity
 from map.dungeon_generator import *
-from map.tile import Tile
-
-TILE_ROOM_FLOOR = Tile(libtcod.light_blue, False)
-TILE_ROOM_WALL = Tile(libtcod.dark_blue, True)
-TILE_CORRIDOR_FLOOR = Tile(libtcod.gray, False)
-TILE_CORRIDOR_WALL = Tile(libtcod.darker_gray, True)
-TILE_DOOR = Tile(libtcod.dark_cyan, False, True)
-TILE_CAVE_FLOOR = Tile(libtcod.darker_orange, False)
-TILE_CAVE_WALL = Tile(libtcod.darkest_orange, True)
-
-int_to_tile = {
-    EMPTY:         TILE_CAVE_WALL,
-    FLOOR:         TILE_ROOM_FLOOR,
-    CORRIDOR:      TILE_CORRIDOR_FLOOR,
-    DOOR:          TILE_DOOR,
-    DEADEND:       TILE_CORRIDOR_FLOOR,
-    ROOM_WALL:     TILE_ROOM_WALL,
-    CORRIDOR_WALL: TILE_CORRIDOR_WALL,
-    CAVE_WALL:     TILE_CAVE_WALL,
-    CAVE:          TILE_CAVE_FLOOR
-}
+from map.tile import Tiles, int_to_tile_map
 
 
 class GameMap:
@@ -126,7 +106,7 @@ class GameMap:
         return fov_map
 
     def get_tile(self, x, y):
-        return int_to_tile.get(self.generator.grid[x][y])
+        return int_to_tile_map.get(self.generator.grid[x][y]).value
 
     def is_tile_open(self, x, y, entity_map=None):
         if not (0 <= x < self.width and 0 <= y < self.height):
