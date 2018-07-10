@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
 
-
 NORTH = {'direction': (0, -1)}
 SOUTH = {'direction': (0, 1)}
 WEST = {'direction': (-1, 0)}
@@ -26,6 +25,7 @@ vk_key_map = {
     libtcod.KEY_KP8:    NORTH,
     libtcod.KEY_KP9:    NORTHEAST,
 
+    libtcod.KEY_KP5:    {'wait': True},
     libtcod.KEY_F11:    {'fullscreen': True},
     libtcod.KEY_ESCAPE: {'exit': True}
 }
@@ -44,7 +44,10 @@ chr_key_map = {
     'y': NORTHWEST,
     'u': NORTHEAST,
     'b': SOUTHWEST,
-    'n': SOUTHEAST
+    'n': SOUTHEAST,
+
+    ' ': {'wait': True},
+    '.': {'wait': True}
 }
 
 

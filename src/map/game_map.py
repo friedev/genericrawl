@@ -1,8 +1,11 @@
 import libtcodpy as libtcod
-from random import getrandbits
-from src.entity import Entity
-from src.map.dungeon_generator import *
-from src.map.tile import Tile
+from render import RenderOrder
+from components.ai import BasicMonster
+from components.fighter import Fighter
+from components.sight import Sight
+from entity import Entity
+from map.dungeon_generator import *
+from map.tile import Tile
 
 TILE_ROOM_FLOOR = Tile(libtcod.light_blue, False)
 TILE_ROOM_WALL = Tile(libtcod.dark_blue, True)
@@ -11,8 +14,6 @@ TILE_CORRIDOR_WALL = Tile(libtcod.darker_gray, True)
 TILE_DOOR = Tile(libtcod.dark_cyan, False, True)
 TILE_CAVE_FLOOR = Tile(libtcod.darker_orange, False)
 TILE_CAVE_WALL = Tile(libtcod.darkest_orange, True)
-
-COLOR_UNKNOWN = libtcod.black
 
 int_to_tile = {
     EMPTY:         TILE_CAVE_WALL,
@@ -34,6 +35,7 @@ class GameMap:
         self.generator = self.initialize_tiles()
         self.entities = []
         self.place_entities(int(width * height / 50))
+        self.fov_map = self.generate_fov_map()
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
@@ -86,11 +88,42 @@ class GameMap:
         for i in range(n_enemies):
             tile = self.find_open_tile()
 
-            color = libtcod.yellow if bool(getrandbits(1)) else libtcod.blue
-            entity = Entity(*tile, 'S', color, 'python')
+            if randint(0, 3) < 3:
+                sight_component = Sight()
+                fighter_component = Fighter(hp=10, defense=1, power=3)
+                ai_component = BasicMonster()
+                entity = Entity(*tile, 'S', libtcod.yellow, 'python', render_order=RenderOrder.ENEMY,
+                                sight=sight_component, fighter=fighter_component, ai=ai_component)
+            else:
+                sight_component = Sight()
+                fighter_component = Fighter(hp=16, defense=1, power=4)
+                ai_component = BasicMonster()
+                entity = Entity(*tile, 'S', libtcod.blue, 'blue python', render_order=RenderOrder.ENEMY,
+                                sight=sight_component,
+                                fighter=fighter_component, ai=ai_component)
+                # TODO be more creative
 
             self.entities.append(entity)
             entity_map[entity.x][entity.y].append(entity)
+
+    def generate_fov_map(self):
+        fov_map = libtcod.map_new(self.width, self.height)
+
+        for x in range(self.width):
+            for y in range(self.height):
+                libtcod.map_set_properties(fov_map, x, y, not self.get_tile(x, y).blocks_sight,
+                                           not self.get_tile(x, y).blocks)
+
+        return fov_map
+
+    def generate_fov_map_with_entities(self, exclude=[]):
+        fov_map = self.generate_fov_map()
+
+        for entity in self.entities:
+            if entity.blocks and entity not in exclude:
+                libtcod.map_set_properties(fov_map, entity.x, entity.y, True, False)
+
+        return fov_map
 
     def get_tile(self, x, y):
         return int_to_tile.get(self.generator.grid[x][y])
