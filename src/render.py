@@ -80,9 +80,13 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
         entities_at_cursor = game_map.get_entities_at_tile(cursor_x, cursor_y)
         if entities_at_cursor:
             names = [entity.indefinite_name() for entity in entities_at_cursor]
+            name_len = len(names)
             names = 'You see ' + ', '.join(names) + '.'
             names = names.rsplit(',', 1)
-            names = ', and'.join(names)
+            if name_len > 2:
+                names = ', and'.join(names)
+            else:
+                names = ' and'.join(names)
             message_log.add_message(Message(names, libtcod.light_gray))
 
     # Print the game messages, one line at a time
