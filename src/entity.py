@@ -1,7 +1,8 @@
-import libtcodpy as libtcod
 from math import atan2
 
+import libtcodpy as libtcod
 from fov import distance
+from game_messages import Message
 from render import RenderOrder
 
 
@@ -69,18 +70,20 @@ class Entity:
         self.color = libtcod.dark_red
 
         if is_player:
-            return 'You have died!'
+            death_message = Message('You die...', libtcod.red)
         else:
-            # Death message must be set before changing the entity's name to that of its corpse
-            death_message = '{0} has died!'.format(self.definite_name().capitalize())
-
-            self.blocks = False
+            death_message = Message('{0} dies!'.format(self.definite_name().capitalize()), libtcod.orange)
             self.render_order = RenderOrder.CORPSE
+
+        if self.is_name_proper:
+            self.name = self.name + "'s corpse"
+        else:
+            self.name = self.name + ' corpse'
+
+        if not is_player:
+            self.blocks = False
+            self.sight = None
             self.fighter = None
             self.ai = None
-            if self.is_name_proper:
-                self.name = self.name + "'s corpse"
-            else:
-                self.name = self.name + ' corpse'
 
-            return death_message
+        return death_message

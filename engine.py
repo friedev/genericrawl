@@ -2,6 +2,7 @@ from src.components.fighter import Fighter
 from src.components.sight import Sight
 from src.entity import Entity
 from src.fov import *
+from src.game_messages import MessageLog
 from src.game_states import GameStates
 from src.input import handle_keys
 from src.map.game_map import GameMap
@@ -9,24 +10,39 @@ from src.render import render_all, clear_all, RenderOrder
 
 
 def main():
-    # Size of the screen, in tiles
+    # Screen dimensions, in characters
     screen_width = 80
     screen_height = 50
 
-    # Size of the map, in tiles
+    # Panel dimensions, in characters
+    panel_width = screen_width
+    panel_height = 7
+
+    # Health bar dimensions, in characters
+    bar_width = 20
+
+    # Message box dimensions, in characters
+    message_x = bar_width + 2
+    message_width = screen_width - bar_width - 2
+    message_height = panel_height - 1
+
+    # Map dimensions, in tiles
     map_width = 100
     map_height = 100
 
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
     console = libtcod.console_new(screen_width, screen_height)
+    panel = libtcod.console_new(panel_width, panel_height)
+
+    message_log = MessageLog(message_x, message_width, message_height)
 
     restart = True
     while restart:
-        restart = play_game(console, map_width, map_height)
+        restart = play_game(console, panel, bar_width, message_log, map_width, map_height)
 
 
-def play_game(console, map_width, map_height):
+def play_game(console, panel, bar_width, message_log, map_width, map_height):
     game_map = GameMap(map_width, map_height)
     player_sight = Sight()
     player_fighter = Fighter(hp=30, defense=2, power=5)
@@ -35,6 +51,7 @@ def play_game(console, map_width, map_height):
     game_map.entities.append(player)
 
     recompute_fov = True
+    fov_map = game_map.generate_fov_map()
     memory = set()
 
     key = libtcod.Key()
@@ -44,12 +61,11 @@ def play_game(console, map_width, map_height):
 
     while not libtcod.console_is_window_closed():
         if recompute_fov:
-            player.sight.get_fov_angled(game_map.fov_map, memory)
+            player.sight.get_fov_angled(fov_map, memory)
 
-        render_all(console, game_map.entities, player, game_map, memory, player.sight.fov_radius,
-                   libtcod.console_get_width(console), libtcod.console_get_height(console))
+        render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, mouse)
         libtcod.console_flush()
-        libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS, key, mouse, True)
+        libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
         clear_all(console, game_map.entities, player, libtcod.console_get_width(console),
                   libtcod.console_get_height(console))
 
@@ -64,31 +80,36 @@ def play_game(console, map_width, map_height):
         fullscreen = action.get('fullscreen')
 
         player_results = {}
-        player_acted = False
 
-        if direction and game_state == GameStates.PLAYER_TURN:
-            move = action.get('move')
-            face = action.get('face')
-            dx, dy = direction
+        if game_state == GameStates.PLAYER_TURN:
+            player_acted = False
 
-            if face and player.sight.face(atan2(dy, dx)):
-                player_acted = True
-                recompute_fov = True
+            if direction:
+                move = action.get('move')
+                face = action.get('face')
+                dx, dy = direction
 
-            if move:
-                if player.move(dx, dy, game_map, face=False):
+                if face and player.sight.face(atan2(dy, dx)):
                     player_acted = True
                     recompute_fov = True
-                else:
-                    blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
-                    if blocking_entities:
-                        target = blocking_entities[0]
-                        # Add the results of the attack to the existing results
-                        player_results = {**player_results, **player.fighter.attack(target.fighter)}
-                        player_acted = True
 
-        if wait and game_state == GameStates.PLAYER_TURN:
-            player_acted = True
+                if move:
+                    if player.move(dx, dy, game_map, face=False):
+                        player_acted = True
+                        recompute_fov = True
+                    else:
+                        blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
+                        if blocking_entities:
+                            target = blocking_entities[0]
+                            # Add the results of the attack to the existing results
+                            player_results = {**player_results, **player.fighter.attack(target.fighter)}
+                            player_acted = True
+
+            if wait:
+                player_acted = True
+
+            if player_acted:
+                game_state = GameStates.ENEMY_TURN
 
         if restart and game_state == GameStates.PLAYER_DEAD:
             return True
@@ -104,7 +125,7 @@ def play_game(console, map_width, map_height):
         dead_entities = player_results.get('dead')
 
         if message:
-            print(message)
+            message_log.add_message(message)
 
         if dead_entities:
             for dead_entity in dead_entities:
@@ -113,34 +134,31 @@ def play_game(console, map_width, map_height):
                     game_state = GameStates.PLAYER_DEAD
                 else:
                     message = dead_entity.kill()
-                print(message)
-
-        if player_acted:
-            game_state = GameStates.ENEMY_TURN
+                message_log.add_message(message)
 
         if game_state == GameStates.ENEMY_TURN:
-            fov_map = game_map.generate_fov_map_with_entities()
+            enemy_fov_map = game_map.generate_fov_map_with_entities()
             for entity in game_map.entities:
                 if entity.ai:
-                    enemy_results = entity.ai.act(game_map, player, fov_map)
+                    enemy_results = entity.ai.act(game_map, player, enemy_fov_map)
 
                     # Process enemy turn results
                     message = enemy_results.get('message')
                     dead_entities = enemy_results.get('dead')
 
                     if message:
-                        print(message)
+                        message_log.add_message(message)
 
                     if dead_entities:
                         for dead_entity in dead_entities:
                             if dead_entity == player:
                                 message = player.kill(is_player=True)
-                                print(message)
+                                message_log.add_message(message)
                                 game_state = GameStates.PLAYER_DEAD
                                 break
                             else:
                                 message = dead_entity.kill()
-                                print(message)
+                                message_log.add_message(message)
 
                 if game_state == GameStates.PLAYER_DEAD:
                     break

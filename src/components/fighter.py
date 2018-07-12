@@ -1,3 +1,6 @@
+from game_messages import Message
+
+
 class Fighter:
     def __init__(self, hp, defense, power):
         self.max_hp = hp
@@ -12,15 +15,16 @@ class Fighter:
 
         if damage > 0:
             target.hp = max(target.hp - damage, 0)
-            results['message'] = '{0} attacks {1} for {2} hit point{3}.'.format(
+            results['message'] = Message('{0} attacks {1} for {2} hit point{3}.'.format(
                 self.owner.definite_name().capitalize(),
                 target.owner.definite_name(), str(damage),
-                's' if damage > 1 else '')
+                's' if damage > 1 else ''))
 
             if target.hp == 0:
                 results['dead'] = [target.owner]
         else:
-            results['message'] = '{0} attacks {1} but does no damage.'.format(self.owner.definite_name().capitalize(),
-                                                                              target.owner.definite_name())
+            results['message'] = Message(
+                '{0} attacks {1} but does no damage.'.format(self.owner.definite_name().capitalize(),
+                                                             target.owner.definite_name()))
 
         return results

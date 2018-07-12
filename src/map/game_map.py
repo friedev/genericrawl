@@ -15,7 +15,6 @@ class GameMap:
         self.generator = self.initialize_tiles()
         self.entities = []
         self.place_entities(int(width * height / 50))
-        self.fov_map = self.generate_fov_map()
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
