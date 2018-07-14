@@ -5,8 +5,6 @@ from fov import distance
 from game_messages import Message
 from libtcodpy import Color
 
-COLOR_UNKNOWN = libtcod.black
-
 
 class RenderOrder(Enum):
     PLAYER = 0
@@ -30,7 +28,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, mouse):
+def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme, mouse):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -44,15 +42,32 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     top_left_y = player.y - center_y
 
     # Draw all visible and remembered tiles
-    for x, y in memory:
-        if libtcod.map_is_in_fov(fov_map, x, y):
-            tile_color = apply_fov_gradient(game_map.get_tile(x, y).color, distance(player.x, player.y, x, y),
-                                            player.sight.fov_radius)
-            libtcod.console_set_char_background(console, x - top_left_x, y - top_left_y, tile_color,
-                                                libtcod.BKGND_SET)
-        else:
-            libtcod.console_set_char_background(console, x - top_left_x, y - top_left_y,
-                                                game_map.get_tile(x, y).memory_color, libtcod.BKGND_SET)
+    for x in range(0, screen_width):
+        for y in range(0, screen_height):
+            tile_x = x + top_left_x
+            tile_y = y + top_left_y
+            if game_map.contains(tile_x, tile_y) and memory[tile_x][tile_y]:
+                tile = game_map.get_tile(tile_x, tile_y, value=False)
+                foreground = color_scheme.foreground.get(tile)
+                background = color_scheme.background.get(tile)
+
+                if libtcod.map_is_in_fov(fov_map, tile_x, tile_y):
+                    if color_scheme.allow_fade:
+                        foreground = apply_fov_gradient(foreground, distance(player.x, player.y, tile_x, tile_y),
+                                                        player.sight.fov_radius)
+                        background = apply_fov_gradient(background, distance(player.x, player.y, tile_x, tile_y),
+                                                        player.sight.fov_radius)
+                else:
+                    foreground = color_scheme.get_memory_color(foreground)
+                    background = color_scheme.get_memory_color(background)
+
+                libtcod.console_set_default_foreground(console, foreground)
+                libtcod.console_put_char(console, x, y, tile.value.character)
+                libtcod.console_set_char_background(console, x, y, background, libtcod.BKGND_SET)
+            else:
+                libtcod.console_set_default_foreground(console, color_scheme.foreground[None])
+                libtcod.console_put_char(console, x, y, ' ')
+                libtcod.console_set_char_background(console, x, y, color_scheme.background[None], libtcod.BKGND_SET)
 
     # Sort entities by their render order
     ordered_entities = sorted(game_map.entities, key=lambda i: i.render_order.value, reverse=True)
@@ -103,10 +118,9 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 
 
-def clear_all(console, entities, player, screen_width, screen_height):
-    for x in range(screen_width):
-        for y in range(screen_height):
-            libtcod.console_set_char_background(console, x, y, COLOR_UNKNOWN, libtcod.BKGND_SET)
+def clear_all(console, entities, player):
+    screen_width = libtcod.console_get_width(console)
+    screen_height = libtcod.console_get_height(console)
 
     for entity in entities:
         libtcod.console_put_char(console, entity.x - player.x + int(screen_width / 2), entity.y - player.y +

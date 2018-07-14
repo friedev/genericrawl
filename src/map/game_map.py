@@ -104,14 +104,15 @@ class GameMap:
 
         return fov_map
 
-    def get_tile(self, x, y):
-        return int_to_tile_map.get(self.generator.grid[x][y]).value
+    def contains(self, x, y):
+        return 0 <= x < self.width and 0 <= y < self.height
+
+    def get_tile(self, x, y, value=True):
+        tile = int_to_tile_map.get(self.generator.grid[x][y])
+        return tile.value if value else tile
 
     def is_tile_open(self, x, y, entity_map=None):
-        if not (0 <= x < self.width and 0 <= y < self.height):
-            return False
-
-        if self.get_tile(x, y).blocks:
+        if not self.contains(x, y) or self.get_tile(x, y).blocks:
             return False
 
         blocking_entities = self.get_entities_at_tile(x, y, True, entity_map)

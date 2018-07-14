@@ -49,10 +49,10 @@ def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, alg
                     libtcod.map_set_in_fov(fov_map, xi, yi, False)
                 elif memory is not None:
                     # Must use "is not None" because [] also evaluates to False
-                    memory.add((xi, yi))
+                    memory[xi][yi] = True
 
     libtcod.map_set_in_fov(fov_map, x, y, True)
-    memory.add((x, y))
+    memory[x][y] = True
 
     if reveal_sides:
         # Ideal, angle-based approach (some issues with signs result in incorrect
@@ -86,5 +86,5 @@ def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, alg
         libtcod.map_set_in_fov(fov_map, x + left_x, y + left_y, True)
         libtcod.map_set_in_fov(fov_map, x + right_x, y + right_y, True)
 
-        memory.add((x + left_x, y + left_y))
-        memory.add((x + right_x, y + right_y))
+        memory[x + left_x][y + left_y] = True
+        memory[x + right_x][y + right_y] = True

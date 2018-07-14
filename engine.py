@@ -1,3 +1,4 @@
+from color_schemes import ColorSchemes
 from src.components.fighter import Fighter
 from src.components.sight import Sight
 from src.entity import Entity
@@ -52,7 +53,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height):
 
     recompute_fov = True
     fov_map = game_map.generate_fov_map()
-    memory = set()
+    memory = [[False for y in range(0, game_map.height)] for x in range(0, game_map.width)]
+    color_scheme = ColorSchemes.SOLID.value
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -63,11 +65,10 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height):
         if recompute_fov:
             player.sight.get_fov_angled(fov_map, memory)
 
-        render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, mouse)
+        render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme, mouse)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
-        clear_all(console, game_map.entities, player, libtcod.console_get_width(console),
-                  libtcod.console_get_height(console))
+        clear_all(console, game_map.entities, player)
 
         recompute_fov = False
 
