@@ -6,7 +6,7 @@ from entity import Entity
 from fov import *
 from game_messages import MessageLog, Message
 from game_states import GameStates
-from input import handle_keys
+from input import InputSchemes
 from map.game_map import GameMap
 from render import render_all, clear_all, RenderOrder
 
@@ -36,15 +36,17 @@ def main():
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
     console = libtcod.console_new(screen_width, screen_height)
     panel = libtcod.console_new(panel_width, panel_height)
-
     message_log = MessageLog(message_x, message_width, message_height)
+
+    input_scheme = InputSchemes.VI.value
+    color_scheme = ColorSchemes.SOLID.value
 
     restart = True
     while restart:
-        restart = play_game(console, panel, bar_width, message_log, map_width, map_height)
+        restart = play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme)
 
 
-def play_game(console, panel, bar_width, message_log, map_width, map_height):
+def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
     game_map = GameMap(map_width, map_height)
     player_sight = Sight()
     player_fighter = Fighter(hp=30, defense=2, power=5)
@@ -56,7 +58,6 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height):
     recompute_fov = True
     fov_map = game_map.generate_fov_map()
     memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
-    color_scheme = ColorSchemes.SOLID.value
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -76,7 +77,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height):
 
         recompute_fov = False
 
-        action = handle_keys(key)
+        action = input_scheme.handle_key(key)
 
         direction = action.get('direction')
         pickup = action.get('pickup')
