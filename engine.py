@@ -77,7 +77,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         recompute_fov = False
 
-        action = input_scheme.handle_key(key)
+        action = input_scheme.handle_key(key, game_state)
 
         direction = action.get('direction')
         pickup = action.get('pickup')
@@ -175,11 +175,11 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                     enemy_results = entity.ai.act(game_map, player, enemy_fov_map)
 
                     # Process enemy turn results
-                    message = enemy_results.get('message')
+                    attack_message = enemy_results.get('attack_message')
                     dead_entities = enemy_results.get('dead')
 
-                    if message:
-                        message_log.add_message(message)
+                    if attack_message:
+                        message_log.add_message(attack_message)
 
                     if dead_entities:
                         for dead_entity in dead_entities:
