@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+from components.item import Item
 from render import RenderOrder
 from components.ai import BasicMonster
 from components.fighter import Fighter
@@ -14,7 +15,7 @@ class GameMap:
         self.height = height
         self.generator = self.initialize_tiles()
         self.entities = []
-        self.place_entities(int(width * height / 50))
+        self.place_entities()
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
@@ -61,11 +62,12 @@ class GameMap:
 
         return generator
 
-    def place_entities(self, n_enemies):
+    def place_entities(self, tiles_per_enemy=20, tiles_per_item=40):
         entity_map = self.generate_entity_map()
+        n_open_tiles = len(self.get_all_open_tiles(include_entities=False))
 
-        for i in range(n_enemies):
-            tile = self.find_open_tile()
+        for i in range(int(n_open_tiles / tiles_per_enemy)):
+            tile = self.find_open_tile(entity_map=entity_map)
 
             if randint(0, 3) < 3:
                 sight_component = Sight()
@@ -78,12 +80,22 @@ class GameMap:
                 fighter_component = Fighter(hp=16, defense=1, power=4)
                 ai_component = BasicMonster()
                 entity = Entity(*tile, 'S', libtcod.blue, 'blue python', render_order=RenderOrder.ENEMY,
-                                sight=sight_component,
-                                fighter=fighter_component, ai=ai_component)
+                                sight=sight_component, fighter=fighter_component, ai=ai_component)
                 # TODO be more creative
 
             self.entities.append(entity)
             entity_map[entity.x][entity.y].append(entity)
+
+        for i in range(int(n_open_tiles / tiles_per_item)):
+            tile = self.find_open_tile(include_entities=False)
+
+            item_component = Item()
+            entity = Entity(*tile, '!', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
+                            item=item_component)
+
+            self.entities.append(entity)
+            entity_map[entity.x][entity.y].append(entity)
+
 
     def generate_fov_map(self):
         fov_map = libtcod.map_new(self.width, self.height)
@@ -111,9 +123,12 @@ class GameMap:
         tile = int_to_tile_map.get(self.generator.grid[x][y])
         return tile.value if value else tile
 
-    def is_tile_open(self, x, y, entity_map=None):
+    def is_tile_open(self, x, y, check_entities=True, entity_map=None):
         if not self.contains(x, y) or self.get_tile(x, y).blocks:
             return False
+
+        if not check_entities:
+            return True
 
         blocking_entities = self.get_entities_at_tile(x, y, True, entity_map)
         return len(blocking_entities) == 0
@@ -139,7 +154,10 @@ class GameMap:
         else:
             return entity_map[x][y]
 
-    def find_open_tile(self, entity_map=None):
+    def find_open_tile(self, include_entities=True, entity_map=None):
+        return choice(self.get_all_open_tiles(include_entities, entity_map))
+
+    def get_all_open_tiles(self, include_entities=True, entity_map=None):
         if not entity_map:
             entity_map = self.generate_entity_map()
 
@@ -147,10 +165,10 @@ class GameMap:
 
         for x in range(self.generator.width):
             for y in range(self.generator.height):
-                if self.is_tile_open(x, y, entity_map):
+                if self.is_tile_open(x, y, include_entities, entity_map):
                     open_tiles.append((x, y))
 
-        return choice(open_tiles)
+        return open_tiles
 
     # Returns a 3D list, where the first two dimensions are the same as the game map
     # The third dimension is a list of the entities in that tile

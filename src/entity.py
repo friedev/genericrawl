@@ -12,7 +12,7 @@ class Entity:
     """
 
     def __init__(self, x, y, char, color, name, is_name_proper=False, blocks=True, render_order=RenderOrder.CORPSE,
-                 sight=None, fighter=None, ai=None):
+                 sight=None, fighter=None, ai=None, item=None, container=None):
         self.x = x
         self.y = y
         self.char = char
@@ -21,9 +21,12 @@ class Entity:
         self.is_name_proper = is_name_proper
         self.blocks = blocks
         self.render_order = render_order
+
         self.sight = sight
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.container = container
 
         if self.sight:
             self.sight.owner = self
@@ -33,6 +36,12 @@ class Entity:
 
         if self.ai:
             self.ai.owner = self
+
+        if self.item:
+            self.item.owner = self
+
+        if self.container:
+            self.container.owner = self
 
     def definite_name(self):
         if self.is_name_proper:

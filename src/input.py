@@ -20,12 +20,12 @@ vk_key_map = {
     libtcod.KEY_KP2:    SOUTH,
     libtcod.KEY_KP3:    SOUTHEAST,
     libtcod.KEY_KP4:    WEST,
+    libtcod.KEY_KP5:    {'wait': True},
     libtcod.KEY_KP6:    EAST,
     libtcod.KEY_KP7:    NORTHWEST,
     libtcod.KEY_KP8:    NORTH,
     libtcod.KEY_KP9:    NORTHEAST,
 
-    libtcod.KEY_KP5:    {'wait': True},
     libtcod.KEY_F11:    {'fullscreen': True},
     libtcod.KEY_ESCAPE: {'exit': True}
 }
@@ -46,6 +46,9 @@ chr_key_map = {
     'b': SOUTHWEST,
     'n': SOUTHEAST,
 
+    'g': {'pickup': True},
+    ',': {'pickup': True},
+    'i': {'inventory': True},
     ' ': {'wait': True},
     '.': {'wait': True},
     'r': {'restart': True}

@@ -3,7 +3,9 @@ from enum import Enum
 import libtcodpy as libtcod
 from fov import distance
 from game_messages import Message
+from game_states import GameStates
 from libtcodpy import Color
+from menu import *
 
 
 class RenderOrder(Enum):
@@ -28,7 +30,8 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme, mouse):
+def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
+               game_state, mouse):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -42,8 +45,8 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     top_left_y = player.y - center_y
 
     # Draw all visible and remembered tiles
-    for x in range(0, screen_width):
-        for y in range(0, screen_height):
+    for x in range(screen_width):
+        for y in range(screen_height):
             tile_x = x + top_left_x
             tile_y = y + top_left_y
             if game_map.contains(tile_x, tile_y) and memory[tile_x][tile_y]:
@@ -113,9 +116,13 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
         message_y += 1
 
     render_bar(panel, 1, 0, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
-               libtcod.light_red, libtcod.darker_red)
+               libtcod.red, libtcod.darker_red)
 
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
+
+    if game_state == GameStates.INVENTORY:
+        inventory_menu(console, 'Press the key next to an item to use it, or Esc to cancel.\n',
+                       player.container, 50, screen_width, screen_height)
 
 
 def clear_all(console, entities, player):

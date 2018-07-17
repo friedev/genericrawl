@@ -15,7 +15,7 @@ class Fighter:
 
         if damage > 0:
             target.hp = max(target.hp - damage, 0)
-            results['message'] = Message('{0} attacks {1} for {2} hit point{3}.'.format(
+            results['attack_message'] = Message('{0} attacks {1} for {2} hit point{3}.'.format(
                 self.owner.definite_name().capitalize(),
                 target.owner.definite_name(), str(damage),
                 's' if damage > 1 else ''))
@@ -23,7 +23,7 @@ class Fighter:
             if target.hp == 0:
                 results['dead'] = [target.owner]
         else:
-            results['message'] = Message(
+            results['attack_message'] = Message(
                 '{0} attacks {1} but does no damage.'.format(self.owner.definite_name().capitalize(),
                                                              target.owner.definite_name()))
 
