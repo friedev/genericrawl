@@ -138,7 +138,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height):
             if game_state == GameStates.INVENTORY:
                 game_state = previous_game_state
             else:
-                return True
+                return False
 
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())

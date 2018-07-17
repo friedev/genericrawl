@@ -94,28 +94,38 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
 
     cursor_x = mouse.cx + top_left_x
     cursor_y = mouse.cy + top_left_y
-    if mouse.lbutton_pressed and libtcod.map_is_in_fov(fov_map, cursor_x, cursor_y):
+
+    if libtcod.map_is_in_fov(fov_map, cursor_x, cursor_y):
         entities_at_cursor = game_map.get_entities_at_tile(cursor_x, cursor_y)
         if entities_at_cursor:
             names = [entity.indefinite_name() for entity in entities_at_cursor]
             name_len = len(names)
-            names = 'You see ' + ', '.join(names) + '.'
+            names = ', '.join(names)
             names = names.rsplit(',', 1)
             if name_len > 2:
                 names = ', and'.join(names)
             else:
                 names = ' and'.join(names)
-            message_log.add_message(Message(names, libtcod.light_gray))
+
+            preview_names = names
+            if len(preview_names) > screen_width - 2:
+                preview_names = str(len(entities_at_cursor)) + ' entities (left click to list all)'
+
+            libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+            libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, preview_names)
+
+            if mouse.lbutton_pressed:
+                message_log.add_message(Message('You see ' + names + '.', libtcod.light_gray))
 
     # Print the game messages, one line at a time
-    message_y = 0
-    for i in range(max(0, len(message_log.messages) - panel_height), max(0, len(message_log.messages))):
+    message_y = 1
+    for i in range(max(0, len(message_log.messages) - panel_height + 1), max(0, len(message_log.messages))):
         message = message_log.messages[i]
         libtcod.console_set_default_foreground(panel, message.color)
         libtcod.console_print_ex(panel, message_log.x, message_y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
         message_y += 1
 
-    render_bar(panel, 1, 0, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
+    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.red, libtcod.darker_red)
 
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
