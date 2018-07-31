@@ -15,6 +15,18 @@ class RenderOrder(Enum):
     CORPSE = auto()
 
 
+def name_entities(entity_list):
+    names = [entity.indefinite_name() for entity in entity_list]
+    name_len = len(names)
+    names = ', '.join(names)
+    names = names.rsplit(',', 1)
+    if name_len > 2:
+        names = ', and'.join(names)
+    else:
+        names = ' and'.join(names)
+    return names
+
+
 def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
 
@@ -31,7 +43,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
 
 
 def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
-               game_state, mouse, menu_selection=0):
+               game_state, mouse, menu_selection=0, key_cursor=None):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -40,9 +52,16 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     center_x = int(screen_width / 2)
     center_y = int(screen_height / 2)
 
+    if key_cursor:
+        camera_x = key_cursor[0]
+        camera_y = key_cursor[1]
+    else:
+        camera_x = player.x
+        camera_y = player.y
+
     # The map coordinates of the top left character displayed on the screen
-    top_left_x = player.x - center_x
-    top_left_y = player.y - center_y
+    top_left_x = camera_x - center_x
+    top_left_y = camera_y - center_y
 
     # Draw all visible and remembered tiles
     for x in range(screen_width):
@@ -82,6 +101,10 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
             libtcod.console_put_char(console, entity.x - top_left_x, entity.y - top_left_y, entity.char,
                                      libtcod.BKGND_NONE)
 
+    if key_cursor:
+        libtcod.console_set_default_foreground(console, libtcod.white)
+        libtcod.console_put_char(console, center_x, center_y, 'X', libtcod.BKGND_NONE)
+
     libtcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
 
     # Panel dimensions
@@ -98,24 +121,12 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     if libtcod.map_is_in_fov(fov_map, cursor_x, cursor_y):
         entities_at_cursor = game_map.get_entities_at_tile(cursor_x, cursor_y)
         if entities_at_cursor:
-            names = [entity.indefinite_name() for entity in entities_at_cursor]
-            name_len = len(names)
-            names = ', '.join(names)
-            names = names.rsplit(',', 1)
-            if name_len > 2:
-                names = ', and'.join(names)
-            else:
-                names = ' and'.join(names)
-
-            preview_names = names
-            if len(preview_names) > screen_width - 2:
-                preview_names = str(len(entities_at_cursor)) + ' entities (left click to list all)'
+            names = name_entities(entities_at_cursor)
+            if len(names) > screen_width - 2:
+                names = str(len(entities_at_cursor)) + ' entities (left-click to list all)'
 
             libtcod.console_set_default_foreground(panel, libtcod.light_gray)
-            libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, preview_names)
-
-            if mouse.lbutton_pressed:
-                message_log.add_message(Message('You see ' + names + '.', libtcod.light_gray))
+            libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, names)
 
     # Print the game messages, one line at a time
     message_y = 1

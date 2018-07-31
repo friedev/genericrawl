@@ -4,6 +4,17 @@ import libtcodpy as libtcod
 from game_states import GameStates
 
 
+def handle_mouse(mouse):
+    (x, y) = (mouse.cx, mouse.cy)
+
+    if mouse.lbutton_pressed:
+        return {'left_click': (x, y)}
+    elif mouse.rbutton_pressed:
+        return {'right_click': (x, y)}
+
+    return {}
+
+
 def apply_modifiers(key, action):
     if 'direction' in action.keys():
         if key.shift:
@@ -80,7 +91,8 @@ GLOBAL = InputScheme(
                 'i': {'inventory': True},
                 'd': {'drop': True},
                 ' ': {'select': True},
-                'e': {'consume': True}
+                'e': {'use': True},
+                't': {'throw': True}
             }),
         GameStates.PLAYER_TURN: KeyMap({},
             {
@@ -118,7 +130,7 @@ class InputSchemes(Enum):
                 's': {'wait': True},
                 'f': {'pickup': True},
                 'v': {'drop': True},
-                'r': {'consume': True}
+                'r': {'use': True}
             })
     })
 

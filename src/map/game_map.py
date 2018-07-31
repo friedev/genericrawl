@@ -89,8 +89,8 @@ class GameMap:
         for i in range(int(n_open_tiles / tiles_per_item)):
             tile = self.find_open_tile(include_entities=False)
 
-            item_component = Item(use_function=heal, amount=10)
-            entity = Entity(*tile, '!', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
+            item_component = Item(use_function=heal, throw_function=heal, amount=10)
+            entity = Entity(*tile, '*', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
                             item=item_component)
 
             self.entities.append(entity)

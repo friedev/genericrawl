@@ -9,24 +9,30 @@ class Fighter:
         self.power = max(0, power)
 
     def attack(self, target):
-        damage = max(0, self.power - target.defense)
-
         results = {}
 
-        if damage > 0:
-            target.hp = max(target.hp - damage, 0)
-            results['attack_message'] = Message('{0} attacks {1} for {2} hit point{3}.'.format(
-                self.owner.definite_name().capitalize(),
-                target.owner.definite_name(), str(damage),
-                's' if damage > 1 else ''))
+        damage_results = target.damage(self.power)
+        damage = damage_results.get('damage')
 
-            if target.hp == 0:
-                results['dead'] = [target.owner]
+        if damage > 0:
+            results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
+                self.owner.definite_name().capitalize(), target.owner.definite_name(), damage))
+
+            results = {**results, **damage_results}
         else:
             results['attack_message'] = Message(
                 '{0} attacks {1} but does no damage.'.format(self.owner.definite_name().capitalize(),
                                                              target.owner.definite_name()))
 
+        return results
+
+    def damage(self, amount):
+        actual_amount = max(0, amount - self.defense)
+        self.hp = max(self.hp - actual_amount, 0)
+
+        results = {'damage': actual_amount}
+        if self.hp == 0:
+            results['dead'] = [self.owner]
         return results
 
     def heal(self, amount):
