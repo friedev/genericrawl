@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from components.item import Item
+from components.item import Item, heal
 from render import RenderOrder
 from components.ai import BasicMonster
 from components.fighter import Fighter
@@ -62,7 +62,7 @@ class GameMap:
 
         return generator
 
-    def place_entities(self, tiles_per_enemy=20, tiles_per_item=40):
+    def place_entities(self, tiles_per_enemy=20, tiles_per_item=30):
         entity_map = self.generate_entity_map()
         n_open_tiles = len(self.get_all_open_tiles(include_entities=False))
 
@@ -89,7 +89,7 @@ class GameMap:
         for i in range(int(n_open_tiles / tiles_per_item)):
             tile = self.find_open_tile(include_entities=False)
 
-            item_component = Item()
+            item_component = Item(use_function=heal, amount=10)
             entity = Entity(*tile, '!', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
                             item=item_component)
 

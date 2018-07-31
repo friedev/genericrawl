@@ -1,10 +1,7 @@
 import libtcodpy as libtcod
 
 
-def menu(console, header, options, width, screen_width, screen_height):
-    if len(options) > 26:
-        raise ValueError('Cannot have a menu with more than 26 options.')
-
+def menu(console, header, options, width, screen_width, screen_height, selection):
     # Calculate total height for the header (after auto-wrap) and one line per option
     header_height = libtcod.console_get_height_rect(console, 0, 0, width, screen_height, header)
     height = len(options) + header_height
@@ -18,12 +15,21 @@ def menu(console, header, options, width, screen_width, screen_height):
 
     # Print all the options
     y = header_height
-    letter_index = ord('a')
+    number_shortcut = 1
     for option_text in options:
-        text = '(' + chr(letter_index) + ') ' + option_text
+        if number_shortcut <= 10:
+            text = str(number_shortcut % 10) + '. ' + option_text
+        else:
+            text = option_text
+
+        if selection is number_shortcut - 1:
+            libtcod.console_set_default_foreground(window, libtcod.light_blue)
+
         libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
+        libtcod.console_set_default_foreground(window, libtcod.white)
+
         y += 1
-        letter_index += 1
+        number_shortcut += 1
 
     # Blit the contents of "window" to the root console
     x = int(screen_width / 2 - width / 2)
@@ -31,11 +37,12 @@ def menu(console, header, options, width, screen_width, screen_height):
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
-def inventory_menu(console, header, inventory, inventory_width, screen_width, screen_height):
+def inventory_menu(console, header, inventory, inventory_width, screen_width, screen_height, selection):
     # Show a menu with each item of the inventory as an option
     if len(inventory.items) == 0:
-        options = ['Inventory is empty.']
+        header = header + '\nInventory is empty.'
+        options = []
     else:
         options = [item.name for item in inventory.items]
 
-    menu(console, header, options, inventory_width, screen_width, screen_height)
+    menu(console, header, options, inventory_width, screen_width, screen_height, selection)

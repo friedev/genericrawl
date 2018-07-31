@@ -65,12 +65,14 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
     game_state = GameStates.PLAYER_TURN
     previous_game_state = game_state
 
+    menu_selection = 0
+
     while not libtcod.console_is_window_closed():
         if recompute_fov:
             player.sight.get_fov_angled(fov_map, memory)
 
         render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
-                   game_state, mouse)
+                   game_state, mouse, menu_selection)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
         clear_all(console, game_map.entities, player)
@@ -80,19 +82,21 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         action = input_scheme.handle_key(key, game_state)
 
         direction = action.get('direction')
-        pickup = action.get('pickup')
         inventory = action.get('inventory')
+        pickup = action.get('pickup')
+        select = action.get('select')
+        drop = action.get('drop')
+        consume = action.get('consume')
         wait = action.get('wait')
         restart = action.get('restart')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
 
         player_results = {}
+        player_acted = False
 
-        if game_state == GameStates.PLAYER_TURN:
-            player_acted = False
-
-            if direction:
+        if direction:
+            if game_state is GameStates.PLAYER_TURN:
                 move = action.get('move')
                 face = action.get('face')
                 dx, dy = direction
@@ -109,31 +113,54 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
                         if blocking_entities:
                             target = blocking_entities[0]
-                            # Add the results of the attack to the existing results
-                            player_results = {**player_results, **player.fighter.attack(target.fighter)}
-                            player_acted = True
+                            attack_results = player.fighter.attack(target.fighter)
+                            player_results = {**player_results, **attack_results}
+                        player_acted = True
+            elif game_state is GameStates.INVENTORY:
+                dy = direction[1]
+                menu_selection += dy
+                if menu_selection < 0:
+                    menu_selection = len(player.container.items) - 1
+                elif menu_selection >= len(player.container.items):
+                    menu_selection = 0
 
-            if pickup:
-                entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
-                for entity in entities_at_tile:
-                    if entity.item:
-                        player_results = {**player_results, **player.container.add_item(entity)}
-                        break
-                else:
-                    message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
+        if inventory:
+            if game_state is GameStates.INVENTORY:
+                game_state = previous_game_state
+            elif game_state is GameStates.PLAYER_TURN:
+                previous_game_state = game_state
+                game_state = GameStates.INVENTORY
 
-            if wait:
-                player_acted = True
+        if pickup and game_state is GameStates.PLAYER_TURN:
+            entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
+            for entity in entities_at_tile:
+                if entity.item:
+                    player_results = {**player_results, **player.container.add_item(entity)}
+                    player_acted = True
+                    break
+            else:
+                message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
-            if player_acted:
-                game_state = GameStates.ENEMY_TURN
+        if drop and game_state is GameStates.INVENTORY:
+            item = player.container.items.pop(menu_selection)
+            item.x = player.x
+            item.y = player.y
+            game_map.entities.append(item)
+            player_acted = True
+
+        if select:
+            pass
+
+        if consume and game_state is GameStates.INVENTORY:
+            use_results = player.container.items[menu_selection].item.use(player)
+            player_results = {**player_results, **use_results}
+            player_acted = True
+
+        if wait and game_state is GameStates.PLAYER_TURN:
+            player_acted = True
 
         if restart and game_state == GameStates.PLAYER_DEAD:
             return True
-
-        if inventory:
-            previous_game_state = game_state
-            game_state = GameStates.INVENTORY
 
         if exit:
             if game_state == GameStates.INVENTORY:
@@ -147,14 +174,16 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         # Process player turn results
         attack_message = player_results.get('attack_message')
         pickup_message = player_results.get('pickup_message')
+        use_message = player_results.get('use_message')
+        new_messages = [attack_message, pickup_message, use_message]
+
         dead_entities = player_results.get('dead')
         item_obtained = player_results.get('item_obtained')
+        item_consumed = player_results.get('item_consumed')
 
-        if attack_message:
-            message_log.add_message(attack_message)
-
-        if pickup_message:
-            message_log.add_message(pickup_message)
+        for message in new_messages:
+            if message:
+                message_log.add_message(message)
 
         if dead_entities:
             for dead_entity in dead_entities:
@@ -167,6 +196,12 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         if item_obtained:
             game_map.entities.remove(item_obtained)
+
+        if item_consumed:
+            player.container.items.remove(item_consumed)
+
+        if player_acted:
+            game_state = GameStates.ENEMY_TURN
 
         if game_state == GameStates.ENEMY_TURN:
             enemy_fov_map = game_map.generate_fov_map_with_entities()

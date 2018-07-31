@@ -72,11 +72,15 @@ GLOBAL = InputScheme(
                 libtcod.KEY_DOWN: SOUTH,
                 libtcod.KEY_LEFT: WEST,
                 libtcod.KEY_RIGHT: EAST,
+                libtcod.KEY_ENTER: {'select': True},
                 libtcod.KEY_F11: {'fullscreen': True},
                 libtcod.KEY_ESCAPE: {'exit': True}
             },
             {
                 'i': {'inventory': True},
+                'd': {'drop': True},
+                ' ': {'select': True},
+                'e': {'consume': True}
             }),
         GameStates.PLAYER_TURN: KeyMap({},
             {
@@ -112,7 +116,9 @@ class InputSchemes(Enum):
         GameStates.PLAYER_TURN: KeyMap({},
             {
                 's': {'wait': True},
-                'f': {'pickup': True}
+                'f': {'pickup': True},
+                'v': {'drop': True},
+                'r': {'consume': True}
             })
     })
 

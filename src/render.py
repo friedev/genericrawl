@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 import libtcodpy as libtcod
 from fov import distance
@@ -9,10 +9,10 @@ from menu import *
 
 
 class RenderOrder(Enum):
-    PLAYER = 0
-    ENEMY = 1
-    ITEM = 2
-    CORPSE = 3
+    PLAYER = auto()
+    ENEMY = auto()
+    ITEM = auto()
+    CORPSE = auto()
 
 
 def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
@@ -31,7 +31,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
 
 
 def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
-               game_state, mouse):
+               game_state, mouse, menu_selection=0):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -131,8 +131,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 
     if game_state == GameStates.INVENTORY:
-        inventory_menu(console, 'Press the key next to an item to use it, or Esc to cancel.\n',
-                       player.container, 50, screen_width, screen_height)
+        inventory_menu(console, 'Inventory\n', player.container, 50, screen_width, screen_height, menu_selection)
 
 
 def clear_all(console, entities, player):

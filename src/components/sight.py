@@ -17,6 +17,9 @@ class Sight:
         self.facing = facing
 
     def face(self, facing):
+        if self.facing is facing:
+            return False
+
         self.facing = facing
         return True
 
