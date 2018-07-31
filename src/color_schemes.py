@@ -5,7 +5,7 @@ from libtcodpy import Color
 from map.tile import Tiles
 
 
-def generate_tile_dict(room_floor, room_wall, corridor_floor, corridor_wall, cave_floor, cave_wall, door,
+def generate_tile_dict(room_floor, room_wall, corridor_floor, corridor_wall, cave_floor, cave_wall, door, stairs,
                        unknown=libtcod.black):
     return {
         Tiles.ROOM_FLOOR:     room_floor,
@@ -15,12 +15,13 @@ def generate_tile_dict(room_floor, room_wall, corridor_floor, corridor_wall, cav
         Tiles.CAVE_FLOOR:     cave_floor,
         Tiles.CAVE_WALL:      cave_wall,
         Tiles.DOOR:           door,
+        Tiles.STAIRS:         stairs,
         None:                 unknown
     }
 
 
 def generate_monochrome_dict(color):
-    return generate_tile_dict(color, color, color, color, color, color, color)
+    return generate_tile_dict(color, color, color, color, color, color, color, color)
 
 
 def color_dict_change_brightness(color_dict, mod):
@@ -41,7 +42,8 @@ def set_tile_color(color_dict, tile, color):
 
 
 DEFAULT_COLORS = generate_tile_dict(libtcod.light_blue, libtcod.dark_blue, libtcod.gray, libtcod.darker_gray,
-                                    libtcod.darker_orange, libtcod.darkest_orange, libtcod.dark_cyan)
+                                    libtcod.darker_orange, libtcod.darkest_orange, libtcod.dark_cyan,
+                                    libtcod.light_blue)
 
 
 class ColorScheme:
@@ -56,10 +58,17 @@ class ColorScheme:
 
 
 class ColorSchemes(Enum):
-    CLASSIC = ColorScheme(foreground=set_tile_color(generate_monochrome_dict(libtcod.lightest_gray), Tiles.DOOR,
-                                                    libtcod.dark_yellow), background=None, memory_brightness_mod=64,
-                          allow_fade=False)
+    CLASSIC = ColorScheme(foreground=generate_monochrome_dict(libtcod.lightest_gray), background=None,
+                          memory_brightness_mod=64, allow_fade=False)
     CLASSIC_COLORED = ColorScheme(foreground=color_dict_change_brightness(DEFAULT_COLORS, 32), background=None,
                                   allow_fade=False)
     SOLID = ColorScheme()
     COMBO = ColorScheme(foreground=color_dict_change_brightness(DEFAULT_COLORS, 32))
+
+
+def init_color_schemes():
+    ColorSchemes.CLASSIC.value.foreground = set_tile_color(ColorSchemes.CLASSIC.value.foreground, Tiles.DOOR,
+                                                           libtcod.dark_yellow)
+
+    for scheme in ColorSchemes:
+        scheme.value.foreground = set_tile_color(scheme.value.foreground, Tiles.STAIRS, libtcod.white)

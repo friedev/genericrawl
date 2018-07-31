@@ -138,6 +138,14 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
 
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.red, libtcod.darker_red)
+    libtcod.console_print_ex(panel, 1, 2, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Attack:  {0}'.format(player.fighter.power))
+    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Defense: {0}'.format(player.fighter.defense))
+
+    libtcod.console_set_default_foreground(panel, libtcod.yellow)
+    libtcod.console_print_ex(panel, 1, 5, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Dungeon Level: {0}'.format(game_map.dungeon_level))
 
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 

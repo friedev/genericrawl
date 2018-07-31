@@ -1,4 +1,4 @@
-from color_schemes import ColorSchemes
+from color_schemes import ColorSchemes, init_color_schemes
 from components.container import Container
 from components.fighter import Fighter
 from components.sight import Sight
@@ -8,6 +8,7 @@ from game_messages import MessageLog, Message
 from game_states import GameStates
 from input import InputSchemes, handle_mouse
 from map.game_map import GameMap
+from map.tile import Tiles
 from render import render_all, clear_all, RenderOrder, name_entities
 
 
@@ -29,6 +30,8 @@ def move_cursor(key_cursor, dx, dy):
 
 
 def main():
+    init_color_schemes()
+
     # Screen dimensions, in characters
     screen_width = 80
     screen_height = 50
@@ -46,8 +49,8 @@ def main():
     message_height = panel_height - 1
 
     # Map dimensions, in tiles
-    map_width = 100
-    map_height = 100
+    map_width = 65
+    map_height = 65
 
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
@@ -64,12 +67,13 @@ def main():
 
 
 def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
-    game_map = GameMap(map_width, map_height)
+    game_map = GameMap(map_width, map_height, 1)
     player_sight = Sight()
-    player_fighter = Fighter(hp=30, defense=2, power=5)
+    player_fighter = Fighter(hp=40, defense=2, power=5)
     player_container = Container(26)
-    player = Entity(*game_map.find_open_tile(), '@', libtcod.white, 'player', render_order=RenderOrder.PLAYER,
-                    sight=player_sight, fighter=player_fighter, container=player_container)
+    player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
+                    render_order=RenderOrder.PLAYER, sight=player_sight, fighter=player_fighter,
+                    container=player_container)
     game_map.entities.append(player)
 
     recompute_fov = True
@@ -159,7 +163,22 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             target = blocking_entities[0]
                             attack_results = player.fighter.attack(target.fighter)
                             player_results = {**player_results, **attack_results}
-                        player_acted = True
+                            player_acted = True
+                        elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
+                            game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
+
+                            player.fighter.max_hp += 10
+                            player.fighter.hp = player.fighter.max_hp
+                            player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
+                            game_map.entities.append(player)
+
+                            recompute_fov = True
+                            fov_map = game_map.generate_fov_map()
+                            memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
+                            player_acted = False
+
+                            libtcod.console_clear(console)
+
             elif game_state is GameStates.INVENTORY:
                 dy = direction[1]
                 menu_selection += dy

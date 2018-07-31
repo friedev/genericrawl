@@ -28,6 +28,7 @@ class Tiles(Enum):
     CAVE_FLOOR = Tile(False)
     CAVE_WALL = Tile(True)
     DOOR = Tile(False, True, '+')
+    STAIRS = Tile(True, False, '>')
 
 
 int_to_tile_map = {
@@ -39,5 +40,6 @@ int_to_tile_map = {
     ROOM_WALL:     Tiles.ROOM_WALL,
     CORRIDOR_WALL: Tiles.CORRIDOR_WALL,
     CAVE_WALL:     Tiles.CAVE_WALL,
-    CAVE:          Tiles.CAVE_FLOOR
+    CAVE:          Tiles.CAVE_FLOOR,
+    STAIRS:        Tiles.STAIRS
 }

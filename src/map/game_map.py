@@ -6,13 +6,14 @@ from components.fighter import Fighter
 from components.sight import Sight
 from entity import Entity
 from map.dungeon_generator import *
-from map.tile import Tiles, int_to_tile_map
+from map.tile import int_to_tile_map
 
 
 class GameMap:
-    def __init__(self, width, height):
+    def __init__(self, width, height, dungeon_level):
         self.width = width
         self.height = height
+        self.dungeon_level = dungeon_level
         self.generator = self.initialize_tiles()
         self.entities = []
         self.place_entities()
@@ -50,16 +51,20 @@ class GameMap:
             for y in range(generator.height):
                 grid_copy[x + 1][y + 1] = generator.grid[x][y]
 
-        # Expand all room floors by 1 tile to fill doorways
+        # Expand all room floors by 1 tile to fill doorways, recording room floors at the same time
+        room_floors = []
         for x in range(generator.width):
             for y in range(generator.height):
                 if generator.grid[x][y] == FLOOR:
+                    room_floors.append((x, y))
                     for nx, ny in generator.findNeighboursDirect(x, y):
                         if generator.grid[nx][ny] == CORRIDOR or generator.grid[nx][ny] == CAVE:
                             grid_copy[nx + 1][ny + 1] = FLOOR
 
-        generator.grid = grid_copy
+        stair_x, stair_y = choice(room_floors)
+        grid_copy[stair_x + 1][stair_y + 1] = STAIRS
 
+        generator.grid = grid_copy
         return generator
 
     def place_entities(self, tiles_per_enemy=20, tiles_per_item=30):
@@ -154,10 +159,10 @@ class GameMap:
         else:
             return entity_map[x][y]
 
-    def find_open_tile(self, include_entities=True, entity_map=None):
-        return choice(self.get_all_open_tiles(include_entities, entity_map))
+    def find_open_tile(self, tile_type=None, include_entities=True, entity_map=None):
+        return choice(self.get_all_open_tiles(tile_type, include_entities, entity_map))
 
-    def get_all_open_tiles(self, include_entities=True, entity_map=None):
+    def get_all_open_tiles(self, tile_type=None, include_entities=True, entity_map=None):
         if not entity_map:
             entity_map = self.generate_entity_map()
 
@@ -166,7 +171,8 @@ class GameMap:
         for x in range(self.generator.width):
             for y in range(self.generator.height):
                 if self.is_tile_open(x, y, include_entities, entity_map):
-                    open_tiles.append((x, y))
+                    if not tile_type or tile_type is self.get_tile(x, y, value=False):
+                        open_tiles.append((x, y))
 
         return open_tiles
 

@@ -25,6 +25,7 @@ CAVE = 5
 ROOM_WALL = 6
 CORRIDOR_WALL = 7
 CAVE_WALL = 8
+STAIRS = 9
 
 
 # Edited; maps floors to their corresponding wall types
