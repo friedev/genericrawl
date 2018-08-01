@@ -29,6 +29,22 @@ def move_cursor(key_cursor, dx, dy):
     return key_cursor[0] + dx, key_cursor[1] + dy
 
 
+def cycle_scheme(scheme, scheme_enum, direction_input):
+    if direction_input < 0:
+        direction_input = -1
+    else:
+        direction_input = 1
+
+    previous_scheme = None
+    for current_scheme in scheme_enum:
+        if current_scheme.value == scheme and direction_input == -1:
+            if previous_scheme:
+                return previous_scheme.value
+        elif previous_scheme and previous_scheme.value == scheme and direction_input == 1:
+            return current_scheme.value
+        previous_scheme = current_scheme
+
+
 def main():
     init_color_schemes()
 
@@ -92,7 +108,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
     while not libtcod.console_is_window_closed():
         if recompute_fov:
-            player.sight.get_fov_angled(fov_map, memory)
+            player.sight.get_fov(fov_map, memory)
 
         render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
                    game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None)
@@ -119,6 +135,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         restart = action.get('restart')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
+        color_scheme_input = action.get('color_scheme')
+        input_scheme_input = action.get('input_scheme')
 
         player_results = {}
         player_acted = False
@@ -146,10 +164,10 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if direction:
             if game_state is GameStates.PLAYER_TURN:
                 move = action.get('move')
-                face = action.get('face')
+                # face = action.get('face')
                 dx, dy = direction
 
-                moved = False
+                # moved = False
 
                 if move:
                     if player.move(dx, dy, game_map, face=False):
@@ -180,10 +198,10 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             libtcod.console_clear(console)
 
                 # In the event that the player moves into a wall, do not adjust facing
-                if face and (not move or moved):
-                    player.sight.face(atan2(dy, dx))
-                    player_acted = True
-                    recompute_fov = True
+                # if face and (not move or moved):
+                #     player.sight.face(atan2(dy, dx))
+                #     player_acted = True
+                #     recompute_fov = True
 
             elif game_state is GameStates.INVENTORY:
                 dy = direction[1]
@@ -261,6 +279,25 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+
+        if color_scheme_input:
+            color_scheme = cycle_scheme(color_scheme, ColorSchemes, color_scheme_input)
+
+        if input_scheme_input:
+            input_scheme = cycle_scheme(input_scheme, InputSchemes, input_scheme_input)
+
+        # TODO combine with above code
+        if input_scheme_input:
+            previous_scheme = None
+            for current_scheme in InputSchemes:
+                if current_scheme.value == input_scheme and color_scheme_input == -1:
+                    if previous_scheme:
+                        input_scheme = previous_scheme.value
+                    break
+                elif previous_scheme and previous_scheme.value == input_scheme and color_scheme_input == 1:
+                    input_scheme = current_scheme.value
+                    break
+                previous_scheme = current_scheme
 
         # Process actions with multiple triggers
         if do_throw:

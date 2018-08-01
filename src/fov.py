@@ -16,7 +16,7 @@ def compute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0, memory=Non
         for xi in range(x - radius, x + radius):
             for yi in range(y - radius, y + radius):
                 if libtcod.map_is_in_fov(fov_map, xi, yi):
-                    memory.add(xi, yi)
+                    memory[xi][yi] = True
 
 
 def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, algorithm=0, memory=None,

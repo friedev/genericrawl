@@ -92,7 +92,11 @@ GLOBAL = InputScheme(
                 'd': {'drop': True},
                 ' ': {'select': True},
                 'e': {'use': True},
-                't': {'throw': True}
+                't': {'throw': True},
+                '-': {'color_scheme': -1},
+                '=': {'color_scheme': 1},
+                '[': {'input_scheme': -1},
+                ']': {'input_scheme': 1}
             }),
         GameStates.PLAYER_TURN: KeyMap({},
             {
