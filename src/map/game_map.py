@@ -9,6 +9,23 @@ from map.dungeon_generator import *
 from map.tile import int_to_tile_map
 
 
+def weighted_choice(weights):
+    weight_list = list(weights.values())
+    selection = randint(1, sum(weight_list))
+
+    weight_index = 0
+    choice_index = 0
+    for weight in weight_list:
+        weight_index += weight
+
+        if selection <= weight_index:
+            break
+
+        choice_index += 1
+
+    return list(weights.keys())[choice_index]
+
+
 class GameMap:
     def __init__(self, width, height, dungeon_level):
         self.width = width
@@ -16,7 +33,8 @@ class GameMap:
         self.dungeon_level = dungeon_level
         self.generator = self.initialize_tiles()
         self.entities = []
-        self.place_entities()
+        self.place_entities(tiles_per_enemy=max(20, 50 - 5 * (dungeon_level - 1)),
+                            tiles_per_item=max(30, 60 - 5 * (dungeon_level - 1)))
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
@@ -68,13 +86,21 @@ class GameMap:
         return generator
 
     def place_entities(self, tiles_per_enemy=20, tiles_per_item=30):
-        entity_map = self.generate_entity_map()
-        n_open_tiles = len(self.get_all_open_tiles(include_entities=False))
+        enemy_weights = {'python': 4, 'blue python': 1}
+        item_weights = {'health_rune': 1}
 
-        for i in range(int(n_open_tiles / tiles_per_enemy)):
-            tile = self.find_open_tile(entity_map=entity_map)
+        open_tiles = self.get_all_open_tiles(include_entities=False)
 
-            if randint(0, 3) < 3:
+        # Unoccupied tiles refers to open tiles with no enemies in them
+        unoccupied_tiles = open_tiles.copy()
+        n_enemies = int(len(open_tiles) / tiles_per_enemy)
+        for i in range(n_enemies):
+            tile = choice(unoccupied_tiles)
+            unoccupied_tiles.remove(tile)
+
+            enemy_choice = weighted_choice(enemy_weights)
+
+            if enemy_choice == 'python':
                 sight_component = Sight()
                 fighter_component = Fighter(hp=10, defense=1, power=3)
                 ai_component = BasicMonster()
@@ -89,18 +115,20 @@ class GameMap:
                 # TODO be more creative
 
             self.entities.append(entity)
-            entity_map[entity.x][entity.y].append(entity)
 
-        for i in range(int(n_open_tiles / tiles_per_item)):
-            tile = self.find_open_tile(include_entities=False)
+        n_items = int(len(open_tiles) / tiles_per_item)
+        for i in range(n_items):
+            tile = choice(open_tiles)
+            open_tiles.remove(tile)
 
-            item_component = Item(use_function=heal, throw_function=heal, amount=10)
-            entity = Entity(*tile, '*', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
-                            item=item_component)
+            item_choice = weighted_choice(item_weights)
+
+            if item_choice == 'health_rune':
+                item_component = Item(use_function=heal, throw_function=heal, amount=10)
+                entity = Entity(*tile, '*', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
+                                item=item_component)
 
             self.entities.append(entity)
-            entity_map[entity.x][entity.y].append(entity)
-
 
     def generate_fov_map(self):
         fov_map = libtcod.map_new(self.width, self.height)
