@@ -69,7 +69,7 @@ def main():
 def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
     game_map = GameMap(map_width, map_height, 1)
     player_sight = Sight()
-    player_fighter = Fighter(hp=40, defense=2, power=5)
+    player_fighter = Fighter(hp=50, defense=0, power=4)
     player_container = Container(26)
     player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
                     render_order=RenderOrder.PLAYER, sight=player_sight, fighter=player_fighter,
@@ -149,14 +149,13 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 face = action.get('face')
                 dx, dy = direction
 
-                if face and player.sight.face(atan2(dy, dx)):
-                    player_acted = True
-                    recompute_fov = True
+                moved = False
 
                 if move:
                     if player.move(dx, dy, game_map, face=False):
                         player_acted = True
                         recompute_fov = True
+                        moved = True
                     else:
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
                         if blocking_entities:
@@ -164,11 +163,12 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             attack_results = player.fighter.attack(target.fighter)
                             player_results = {**player_results, **attack_results}
                             player_acted = True
+                            moved = True
                         elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
                             game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
 
                             player.fighter.max_hp += 10
-                            player.fighter.hp = player.fighter.max_hp
+                            player.fighter.hp += 10
                             player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
                             game_map.entities.append(player)
 
@@ -178,6 +178,12 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             player_acted = False
 
                             libtcod.console_clear(console)
+
+                # In the event that the player moves into a wall, do not adjust facing
+                if face and (not move or moved):
+                    player.sight.face(atan2(dy, dx))
+                    player_acted = True
+                    recompute_fov = True
 
             elif game_state is GameStates.INVENTORY:
                 dy = direction[1]
@@ -220,7 +226,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         if use and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
-                use_results = player.container.items[menu_selection].item.use(player)
+                use_results = player.container.items[menu_selection].item.use(player, game_map)
                 player_results = {**player_results, **use_results}
                 player_acted = True
 
@@ -260,8 +266,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if do_throw:
             if (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
                     game_map.is_tile_open(*key_cursor, check_entities=False):
-                throw_results = throwing.use(player, throwing=True, target_x=key_cursor[0], target_y=key_cursor[1],
-                                             game_map=game_map)
+                throw_results = throwing.use(player, game_map, throwing=True, target_x=key_cursor[0],
+                                             target_y=key_cursor[1], )
                 player_results = {**player_results, **throw_results}
                 game_state = previous_game_state
                 throwing = None
@@ -273,6 +279,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         use_message = player_results.get('use_message')
         new_messages = [attack_message, pickup_message, use_message]
 
+        recompute_fov = recompute_fov or player_results.get('recompute_fov')
         dead_entities = player_results.get('dead')
         item_obtained = player_results.get('item_obtained')
         item_consumed = player_results.get('item_consumed')
@@ -305,6 +312,9 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
             if item_moved not in game_map.entities:
                 game_map.entities.append(item_moved)
+
+        if game_state is not GameStates.INVENTORY:
+            menu_selection = 0
 
         if player_acted:
             game_state = GameStates.ENEMY_TURN

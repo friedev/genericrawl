@@ -5,7 +5,7 @@ class Fighter:
     def __init__(self, hp, defense, power):
         self.max_hp = hp
         self.hp = hp
-        self.defense = max(1, defense)
+        self.defense = max(0, defense)
         self.power = max(0, power)
 
     def attack(self, target):
@@ -26,8 +26,11 @@ class Fighter:
 
         return results
 
-    def damage(self, amount):
-        actual_amount = max(0, amount - self.defense)
+    def damage(self, amount, ignore_defense=False):
+        if ignore_defense:
+            actual_amount = amount
+        else:
+            actual_amount = int(amount - self.defense)
         self.hp = max(self.hp - actual_amount, 0)
 
         results = {'damage': actual_amount}

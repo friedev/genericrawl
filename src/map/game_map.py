@@ -1,12 +1,11 @@
-import libtcodpy as libtcod
-from components.item import Item, heal
-from render import RenderOrder
 from components.ai import BasicMonster
 from components.fighter import Fighter
+from components.item import *
 from components.sight import Sight
 from entity import Entity
 from map.dungeon_generator import *
 from map.tile import int_to_tile_map
+from render import RenderOrder
 
 
 def weighted_choice(weights):
@@ -26,6 +25,20 @@ def weighted_choice(weights):
     return list(weights.keys())[choice_index]
 
 
+def get_weights_for_level(weights, dungeon_level):
+    level_weights = weights.copy()
+    for key in weights.keys():
+        weight = weights[key]
+        if type(weight) is list:
+            if len(weight) > dungeon_level - 1:
+                level_weights[key] = weight[dungeon_level - 1]
+            else:
+                level_weights[key] = weight[len(weight) - 1]
+        else:
+            level_weights[key] = weight
+    return level_weights
+
+
 class GameMap:
     def __init__(self, width, height, dungeon_level):
         self.width = width
@@ -33,8 +46,8 @@ class GameMap:
         self.dungeon_level = dungeon_level
         self.generator = self.initialize_tiles()
         self.entities = []
-        self.place_entities(tiles_per_enemy=max(20, 50 - 5 * (dungeon_level - 1)),
-                            tiles_per_item=max(30, 60 - 5 * (dungeon_level - 1)))
+        self.place_entities(max(20, 50 - 5 * (dungeon_level - 1)), max(30, 60 - 5 * (dungeon_level - 1)),
+                            dungeon_level)
 
     def initialize_tiles(self):
         # Dungeon size adjusted by 2 to ensure perimeter walls
@@ -85,9 +98,14 @@ class GameMap:
         generator.grid = grid_copy
         return generator
 
-    def place_entities(self, tiles_per_enemy=20, tiles_per_item=30):
-        enemy_weights = {'python': 4, 'blue python': 1}
-        item_weights = {'health_rune': 1}
+    def place_entities(self, tiles_per_enemy, tiles_per_item, dungeon_level):
+        enemy_weights = {'goblin': [3, 2, 1, 0], 'orc': [1, 2, 3, 2, 1, 0], 'ogre': [0, 0, 1],
+                         'troll': [0, 0, 0, 0, 1, 1, 2]}
+        item_weights = {'rock': 2, 'rune of healing': 4, 'rune of pain': 2, 'rune of might': 1,
+                        'rune of protection': 1, 'rune of teleportation': 1}
+
+        level_enemy_weights = get_weights_for_level(enemy_weights, dungeon_level)
+        level_item_weights = get_weights_for_level(item_weights, dungeon_level)
 
         open_tiles = self.get_all_open_tiles(include_entities=False)
 
@@ -98,21 +116,35 @@ class GameMap:
             tile = choice(unoccupied_tiles)
             unoccupied_tiles.remove(tile)
 
-            enemy_choice = weighted_choice(enemy_weights)
+            enemy_choice = weighted_choice(level_enemy_weights)
 
-            if enemy_choice == 'python':
+            if enemy_choice == 'goblin':
+                char = 'g'
+                color = libtcod.darker_green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=10, defense=1, power=3)
+                fighter_component = Fighter(hp=10, defense=0, power=4)
                 ai_component = BasicMonster()
-                entity = Entity(*tile, 'S', libtcod.yellow, 'python', render_order=RenderOrder.ENEMY,
-                                sight=sight_component, fighter=fighter_component, ai=ai_component)
+            elif enemy_choice == 'orc':
+                char = 'o'
+                color = libtcod.green
+                sight_component = Sight()
+                fighter_component = Fighter(hp=15, defense=1, power=4)
+                ai_component = BasicMonster()
+            elif enemy_choice == 'ogre':
+                char = 'O'
+                color = libtcod.darker_green
+                sight_component = Sight()
+                fighter_component = Fighter(hp=20, defense=3, power=6)
+                ai_component = BasicMonster()
             else:
+                char = 'T'
+                color = libtcod.darker_gray
                 sight_component = Sight()
-                fighter_component = Fighter(hp=16, defense=1, power=4)
+                fighter_component = Fighter(hp=30, defense=4, power=6)
                 ai_component = BasicMonster()
-                entity = Entity(*tile, 'S', libtcod.blue, 'blue python', render_order=RenderOrder.ENEMY,
-                                sight=sight_component, fighter=fighter_component, ai=ai_component)
-                # TODO be more creative
+
+            entity = Entity(*tile, char, color, enemy_choice, render_order=RenderOrder.ENEMY,
+                            sight=sight_component, fighter=fighter_component, ai=ai_component)
 
             self.entities.append(entity)
 
@@ -121,12 +153,40 @@ class GameMap:
             tile = choice(open_tiles)
             open_tiles.remove(tile)
 
-            item_choice = weighted_choice(item_weights)
+            item_choice = weighted_choice(level_item_weights)
 
-            if item_choice == 'health_rune':
-                item_component = Item(use_function=heal, throw_function=heal, amount=10)
-                entity = Entity(*tile, '*', libtcod.red, 'health rune', blocks=False, render_order=RenderOrder.ITEM,
-                                item=item_component)
+            if item_choice == 'rock':
+                char = '*'
+                color = libtcod.darker_gray
+                item_component = Item(use_function=None, throw_function=throw_std, amount=4)
+
+            elif item_choice == 'rune of healing':
+                char = '*'
+                color = libtcod.dark_green
+                item_component = Item(use_function=heal, throw_function=heal, amount=1 / 3)
+
+            elif item_choice == 'rune of pain':
+                char = '*'
+                color = libtcod.red
+                item_component = Item(use_function=pain, throw_function=pain, amount=0.5)
+
+            elif item_choice == 'rune of might':
+                char = '*'
+                color = libtcod.yellow
+                item_component = Item(use_function=might, throw_function=might, amount=1)
+
+            elif item_choice == 'rune of protection':
+                char = '*'
+                color = libtcod.blue
+                item_component = Item(use_function=protection, throw_function=protection, amount=1)
+
+            elif item_choice == 'rune of teleportation':
+                char = '*'
+                color = libtcod.magenta
+                item_component = Item(use_function=teleportation, throw_function=teleportation)
+
+            entity = Entity(*tile, char, color, item_choice, blocks=False, render_order=RenderOrder.ITEM,
+                            item=item_component)
 
             self.entities.append(entity)
 
