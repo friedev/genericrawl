@@ -18,6 +18,25 @@ def get_throw_target(game_map, **kwargs):
     return throw_target
 
 
+def equip(*args, **kwargs):
+    user = args[0]
+    item = args[1]
+
+    results = user.slots.toggle_equip(item)
+    equipped = results.get('equipped')
+    unequipped = results.get('unequipped')
+
+    if equipped and unequipped:
+        results['use_message'] = Message('You swap out {0} for {1}.'.format(unequipped.definite_name,
+                                                                        equipped.definite_name), libtcod.light_blue)
+    elif equipped:
+        results['use_message'] = Message('You equip {0}.'.format(equipped.definite_name), libtcod.light_blue)
+    elif unequipped:
+        results['use_message'] = Message('You unequip {0}.'.format(unequipped.definite_name), libtcod.light_blue)
+
+    return results
+
+
 def throw_std(*args, **kwargs):
     item = args[1]
     target_x = kwargs.get('target_x')
@@ -30,17 +49,20 @@ def throw_std(*args, **kwargs):
         return results
 
     amount = kwargs.get('amount')
+    if not amount and item.equipment:
+        amount = item.equipment.attack_bonus
+
     if not amount:
         amount = randint(1, 4)
 
     results = {**results, **target.fighter.damage(amount)}
     if results.get('damage') > 0:
-        results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name(),
-                                                                           target.definite_name(),
+        results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name,
+                                                                           target.definite_name,
                                                                            results['damage']))
     else:
-        results['use_message'] = Message('{0} bounces off {1} harmlessly.'.format(item.definite_name(),
-                                                                                  target.definite_name()))
+        results['use_message'] = Message('{0} bounces off {1} harmlessly.'.format(item.definite_name,
+                                                                                  target.definite_name))
     return results
 
 
@@ -67,7 +89,7 @@ def heal(*args, **kwargs):
             results['use_message'] = Message('You are already fully healed.', libtcod.yellow)
         else:
             results['item_consumed'] = item
-            results['use_message'] = Message('The rune has no effect on {0}.'.format(target.definite_name()),
+            results['use_message'] = Message('The rune has no effect on {0}.'.format(target.definite_name),
                                              libtcod.yellow)
     else:
         if type(amount) is float:
@@ -81,7 +103,7 @@ def heal(*args, **kwargs):
             results['use_message'] = Message('You feel rejuvenated! You recover {0} HP.'.format(amount_healed),
                                              libtcod.green)
         else:
-            results['use_message'] = Message('{0} recovers {1} HP.'.format(target.definite_name(), amount_healed),
+            results['use_message'] = Message('{0} recovers {1} HP.'.format(target.definite_name, amount_healed),
                                              libtcod.green)
 
     return results
@@ -114,7 +136,7 @@ def pain(*args, **kwargs):
         results['use_message'] = Message('You feel a searing pain! You lose {0} HP.'.format(actual_amount),
                                          libtcod.red)
     else:
-        results['use_message'] = Message('{0} loses {1} HP.'.format(target.definite_name(), actual_amount),
+        results['use_message'] = Message('{0} loses {1} HP.'.format(target.definite_name, actual_amount),
                                          libtcod.red)
 
     return results
@@ -137,18 +159,18 @@ def might(*args, **kwargs):
     player_using = target == args[0]
 
     if type(amount) is float:
-        actual_amount = int(target.fighter.power * amount)
+        actual_amount = int(target.fighter.attack * amount)
     else:
         actual_amount = amount
 
-    target.fighter.power += actual_amount
+    target.fighter.base_attack += actual_amount
 
     results = {'item_consumed': item}
     if player_using:
         results['use_message'] = Message('Your muscles grow rapidly! You gain {0} attack.'.format(actual_amount),
                                          libtcod.yellow)
     else:
-        results['use_message'] = Message('{0} appears stronger.'.format(target.definite_name()), libtcod.yellow)
+        results['use_message'] = Message('{0} appears stronger.'.format(target.definite_name), libtcod.yellow)
 
     return results
 
@@ -174,14 +196,14 @@ def protection(*args, **kwargs):
     else:
         actual_amount = amount
 
-    target.fighter.defense += actual_amount
+    target.fighter.base_defense += actual_amount
 
     results = {'item_consumed': item}
     if player_using:
         results['use_message'] = Message('Your body feels tougher! You gain {0} defense.'.format(actual_amount),
                                          libtcod.yellow)
     else:
-        results['use_message'] = Message('{0} appears more resilient.'.format(target.definite_name()), libtcod.yellow)
+        results['use_message'] = Message('{0} appears more resilient.'.format(target.definite_name), libtcod.yellow)
 
     return results
 
@@ -210,7 +232,7 @@ def teleportation(*args, **kwargs):
                                          libtcod.magenta)
         results['recompute_fov'] = True
     else:
-        results['use_message'] = Message('{0} suddenly vanishes.'.format(target.definite_name()), libtcod.yellow)
+        results['use_message'] = Message('{0} suddenly vanishes.'.format(target.definite_name), libtcod.yellow)
 
     return results
 
@@ -229,7 +251,7 @@ class Item:
             throw_results = self.throw_function(user, self.owner, game_map, **kwargs)
             results = {**results, **throw_results}
         elif self.use_function is None:
-            results['use_message'] = Message('{0} cannot be used'.format(self.owner.definite_name().capitalize()),
+            results['use_message'] = Message('{0} cannot be used'.format(self.owner.definite_name.capitalize()),
                                              libtcod.yellow)
             return results
         else:

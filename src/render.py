@@ -16,7 +16,7 @@ class RenderOrder(Enum):
 
 
 def name_entities(entity_list):
-    names = [entity.indefinite_name() for entity in entity_list]
+    names = [entity.indefinite_name for entity in entity_list]
     name_len = len(names)
     names = ', '.join(names)
     names = names.rsplit(',', 1)
@@ -139,7 +139,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.red, libtcod.darker_red)
     libtcod.console_print_ex(panel, 1, 2, libtcod.BKGND_NONE, libtcod.LEFT,
-                             'Attack:  {0}'.format(player.fighter.power))
+                             'Attack:  {0}'.format(player.fighter.attack))
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Defense: {0}'.format(player.fighter.defense))
 
@@ -150,7 +150,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 
     if game_state == GameStates.INVENTORY:
-        inventory_menu(console, 'Inventory\n', player.container, 50, screen_width, screen_height, menu_selection)
+        inventory_menu(console, 'Inventory\n', player, 50, screen_width, screen_height, menu_selection)
 
 
 def clear_all(console, entities, player):

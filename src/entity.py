@@ -12,7 +12,7 @@ class Entity:
     """
 
     def __init__(self, x, y, char, color, name, is_name_proper=False, blocks=True, render_order=RenderOrder.CORPSE,
-                 sight=None, fighter=None, ai=None, item=None, container=None):
+                 sight=None, fighter=None, slots=None, ai=None, item=None, equipment=None, container=None):
         self.x = x
         self.y = y
         self.char = char
@@ -24,8 +24,10 @@ class Entity:
 
         self.sight = sight
         self.fighter = fighter
+        self.slots = slots
         self.ai = ai
         self.item = item
+        self.equipment = equipment
         self.container = container
 
         if self.sight:
@@ -34,21 +36,29 @@ class Entity:
         if self.fighter:
             self.fighter.owner = self
 
+        if self.slots:
+            self.slots.owner = self
+
         if self.ai:
             self.ai.owner = self
 
         if self.item:
             self.item.owner = self
 
+        if self.equipment:
+            self.equipment.owner = self
+
         if self.container:
             self.container.owner = self
 
+    @property
     def definite_name(self):
         if self.is_name_proper:
             return self.name
         else:
             return 'the ' + self.name
 
+    @property
     def indefinite_name(self):
         if self.is_name_proper:
             return self.name
@@ -81,7 +91,7 @@ class Entity:
         if is_player:
             death_message = Message('You die...', libtcod.red)
         else:
-            death_message = Message('{0} dies!'.format(self.definite_name().capitalize()), libtcod.orange)
+            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), libtcod.orange)
             self.render_order = RenderOrder.CORPSE
 
         if self.is_name_proper:

@@ -1,7 +1,9 @@
 from components.ai import BasicMonster
+from components.equipment import Equipment
 from components.fighter import Fighter
 from components.item import *
 from components.sight import Sight
+from components.slots import SlotTypes
 from entity import Entity
 from map.dungeon_generator import *
 from map.tile import int_to_tile_map
@@ -101,8 +103,8 @@ class GameMap:
     def place_entities(self, tiles_per_enemy, tiles_per_item, dungeon_level):
         enemy_weights = {'goblin': [3, 2, 1, 0], 'orc': [1, 2, 3, 2, 1, 0], 'ogre': [0, 0, 1],
                          'troll': [0, 0, 0, 0, 1, 1, 2]}
-        item_weights = {'rock': 2, 'rune of healing': 4, 'rune of pain': 2, 'rune of might': 1,
-                        'rune of protection': 1, 'rune of teleportation': 1}
+        item_weights = {'sword': [0, 0, 1], 'armor': [0, 0, 1], 'rock': 2, 'rune of healing': 4, 'rune of pain': 2,
+                        'rune of might': 1, 'rune of protection': 1, 'rune of teleportation': 1}
 
         level_enemy_weights = get_weights_for_level(enemy_weights, dungeon_level)
         level_item_weights = get_weights_for_level(item_weights, dungeon_level)
@@ -122,25 +124,25 @@ class GameMap:
                 char = 'g'
                 color = libtcod.darker_green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=10, defense=0, power=4)
+                fighter_component = Fighter(hp=10, defense=0, attack=3)
                 ai_component = BasicMonster()
             elif enemy_choice == 'orc':
                 char = 'o'
                 color = libtcod.green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=15, defense=1, power=4)
+                fighter_component = Fighter(hp=10, defense=2, attack=3)
                 ai_component = BasicMonster()
             elif enemy_choice == 'ogre':
                 char = 'O'
                 color = libtcod.darker_green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=20, defense=3, power=6)
+                fighter_component = Fighter(hp=20, defense=3, attack=6)
                 ai_component = BasicMonster()
             else:
                 char = 'T'
                 color = libtcod.darker_gray
                 sight_component = Sight()
-                fighter_component = Fighter(hp=30, defense=4, power=6)
+                fighter_component = Fighter(hp=30, defense=4, attack=6)
                 ai_component = BasicMonster()
 
             entity = Entity(*tile, char, color, enemy_choice, render_order=RenderOrder.ENEMY,
@@ -154,8 +156,21 @@ class GameMap:
             open_tiles.remove(tile)
 
             item_choice = weighted_choice(level_item_weights)
+            equipment_component = None
 
-            if item_choice == 'rock':
+            if item_choice == 'sword':
+                char = '/'
+                color = libtcod.lighter_gray
+                item_component = Item(use_function=equip)
+                equipment_component = Equipment(SlotTypes.WEAPON, attack_bonus=2)
+
+            elif item_choice == 'armor':
+                char = '['
+                color = libtcod.lighter_gray
+                item_component = Item(use_function=equip)
+                equipment_component = Equipment(SlotTypes.ARMOR, defense_bonus=2)
+
+            elif item_choice == 'rock':
                 char = '*'
                 color = libtcod.darker_gray
                 item_component = Item(use_function=None, throw_function=throw_std, amount=4)
@@ -186,7 +201,7 @@ class GameMap:
                 item_component = Item(use_function=teleportation, throw_function=teleportation)
 
             entity = Entity(*tile, char, color, item_choice, blocks=False, render_order=RenderOrder.ITEM,
-                            item=item_component)
+                            item=item_component, equipment=equipment_component)
 
             self.entities.append(entity)
 

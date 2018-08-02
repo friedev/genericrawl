@@ -257,7 +257,6 @@ class dungeonGenerator:
                     toFill.add((nx, ny))
             count += 1
             if count > self.width * self.height:
-                print('overrun')
                 break
 
 

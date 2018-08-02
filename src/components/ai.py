@@ -51,7 +51,7 @@ class BasicMonster:
                     libtcod.map_delete(use_fov_map)
             else:
                 # Add the results of the attack to the existing results
-                results = {**results, **self.owner.fighter.attack(player.fighter)}
+                results = {**results, **self.owner.fighter.attack_entity(player.fighter)}
         else:
             # Update the FOV map if given one
             if given_fov_map:

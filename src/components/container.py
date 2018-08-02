@@ -15,7 +15,7 @@ class Container:
             results['pickup_message'] = Message('You cannot carry any more, your inventory is full.', libtcod.yellow)
         else:
             results['item_obtained'] = item
-            results['pickup_message'] = Message('You pick up {0}.'.format(item.definite_name()), libtcod.blue)
+            results['pickup_message'] = Message('You pick up {0}.'.format(item.definite_name), libtcod.light_blue)
 
             self.items.append(item)
 

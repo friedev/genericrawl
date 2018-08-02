@@ -2,6 +2,7 @@ from color_schemes import ColorSchemes, init_color_schemes
 from components.container import Container
 from components.fighter import Fighter
 from components.sight import Sight
+from components.slots import Slots
 from entity import Entity
 from fov import *
 from game_messages import MessageLog, Message
@@ -85,10 +86,11 @@ def main():
 def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
     game_map = GameMap(map_width, map_height, 1)
     player_sight = Sight()
-    player_fighter = Fighter(hp=50, defense=0, power=4)
+    player_fighter = Fighter(hp=50, defense=0, attack=4)
+    player_slots = Slots()
     player_container = Container(26)
     player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
-                    render_order=RenderOrder.PLAYER, sight=player_sight, fighter=player_fighter,
+                    render_order=RenderOrder.PLAYER, sight=player_sight, fighter=player_fighter, slots=player_slots,
                     container=player_container)
     game_map.entities.append(player)
 
@@ -178,14 +180,14 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
                         if blocking_entities:
                             target = blocking_entities[0]
-                            attack_results = player.fighter.attack(target.fighter)
+                            attack_results = player.fighter.attack_entity(target.fighter)
                             player_results = {**player_results, **attack_results}
                             player_acted = True
                             moved = True
                         elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
                             game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
 
-                            player.fighter.max_hp += 10
+                            player.fighter.base_max_hp += 10
                             player.fighter.hp += 10
                             player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
                             game_map.entities.append(player)
@@ -215,6 +217,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 key_cursor = move_cursor(key_cursor, *direction)
 
         if inventory:
+            menu_selection = 0
             if game_state is GameStates.INVENTORY:
                 game_state = previous_game_state
             elif game_state is GameStates.PLAYER_TURN:
@@ -234,6 +237,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if drop and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
                 item = player.container.items.pop(menu_selection)
+                if player.slots.is_equipped(item):
+                    player.slots.toggle_equip(item)
                 item.x = player.x
                 item.y = player.y
                 game_map.entities.append(item)
@@ -304,7 +309,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             if (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
                     game_map.is_tile_open(*key_cursor, check_entities=False):
                 throw_results = throwing.use(player, game_map, throwing=True, target_x=key_cursor[0],
-                                             target_y=key_cursor[1], )
+                                             target_y=key_cursor[1])
                 player_results = {**player_results, **throw_results}
                 game_state = previous_game_state
                 throwing = None
@@ -349,9 +354,6 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
             if item_moved not in game_map.entities:
                 game_map.entities.append(item_moved)
-
-        if game_state is not GameStates.INVENTORY:
-            menu_selection = 0
 
         if player_acted:
             game_state = GameStates.ENEMY_TURN

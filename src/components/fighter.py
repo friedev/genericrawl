@@ -2,27 +2,54 @@ from game_messages import Message
 
 
 class Fighter:
-    def __init__(self, hp, defense, power):
-        self.max_hp = hp
+    def __init__(self, hp, defense, attack):
+        self.base_max_hp = hp
+        self.base_defense = max(0, defense)
+        self.base_attack = max(0, attack)
         self.hp = hp
-        self.defense = max(0, defense)
-        self.power = max(0, power)
 
-    def attack(self, target):
+    @property
+    def max_hp(self):
+        if self.owner and self.owner.slots:
+            bonus = self.owner.slots.max_hp_bonus
+        else:
+            bonus = 0
+
+        return self.base_max_hp + bonus
+
+    @property
+    def attack(self):
+        if self.owner and self.owner.slots:
+            bonus = self.owner.slots.attack_bonus
+        else:
+            bonus = 0
+
+        return self.base_attack + bonus
+
+    @property
+    def defense(self):
+        if self.owner and self.owner.slots:
+            bonus = self.owner.slots.defense_bonus
+        else:
+            bonus = 0
+
+        return self.base_defense + bonus
+
+    def attack_entity(self, target):
         results = {}
 
-        damage_results = target.damage(self.power)
+        damage_results = target.damage(self.attack)
         damage = damage_results.get('damage')
 
         if damage > 0:
             results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
-                self.owner.definite_name().capitalize(), target.owner.definite_name(), damage))
+                self.owner.definite_name.capitalize(), target.owner.definite_name, damage))
 
             results = {**results, **damage_results}
         else:
             results['attack_message'] = Message(
-                '{0} attacks {1} but does no damage.'.format(self.owner.definite_name().capitalize(),
-                                                             target.owner.definite_name()))
+                '{0} attacks {1} but does no damage.'.format(self.owner.definite_name.capitalize(),
+                                                             target.owner.definite_name))
 
         return results
 
