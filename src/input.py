@@ -94,6 +94,7 @@ GLOBAL = InputScheme('Global',
                 ' ': {'select': True},
                 'e': {'use': True},
                 't': {'throw': True},
+                'l': {'look': True},
 
                 '1': {'index': 0},
                 '2': {'index': 1},
@@ -145,9 +146,9 @@ class InputSchemes(Enum):
         GameStates.PLAYER_TURN: KeyMap({},
             {
                 's': {'wait': True},
-                'f': {'pickup': True},
                 'v': {'drop': True},
-                'r': {'use': True}
+                'r': {'use': True},
+                'f': {'look': True}
             })
     })
 
@@ -162,7 +163,9 @@ class InputSchemes(Enum):
                 'y': NORTHWEST,
                 'u': NORTHEAST,
                 'b': SOUTHWEST,
-                'n': SOUTHEAST
+                'n': SOUTHEAST,
+
+                ';': {'look': True}
             })
     })
 

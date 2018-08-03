@@ -43,6 +43,20 @@ def cycle_scheme(scheme, scheme_enum, direction_input):
         return scheme_list[new_index]
 
 
+def get_look_message(x, y, game_map, fov_map, player):
+    if libtcod.map_is_in_fov(fov_map, x, y):
+        entity_list = game_map.get_entities_at_tile(x, y)
+
+        if player in entity_list:
+            entity_list.remove(player)
+
+        if len(entity_list) > 0:
+            entity_names = name_entities(entity_list)
+            return Message('You see ' + entity_names + '.', libtcod.light_gray)
+
+    return None
+
+
 def main():
     init_color_schemes()
 
@@ -103,6 +117,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
     key_cursor = (0, 0)
     menu_selection = 0
+    looking = False
     throwing = None
 
     while not libtcod.console_is_window_closed():
@@ -131,6 +146,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         drop = action.get('drop')
         use = action.get('use')
         throw = action.get('throw')
+        look = action.get('look')
         wait = action.get('wait')
         restart = action.get('restart')
         exit = action.get('exit')
@@ -141,25 +157,24 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         player_results = {}
         player_acted = False
 
-        do_throw = False
+        do_target = False
 
-        if left_click:
+        if left_click and game_state is GameStates.TARGETING:
+            key_cursor = get_mouse_tile(libtcod.console_get_width(console), libtcod.console_get_height(
+                console), player.x, player.y, *left_click)
+            do_target = True
+
+        if right_click:
             if game_state is GameStates.TARGETING:
-                key_cursor = get_mouse_tile(libtcod.console_get_width(console), libtcod.console_get_height(
-                    console), player.x, player.y, *left_click)
-                do_throw = True
+                game_state = previous_game_state
+                throwing = None
+                looking = False
             else:
                 mouse_tile = get_mouse_tile(libtcod.console_get_width(console), libtcod.console_get_height(
-                    console), player.x, player.y, *left_click)
-                if libtcod.map_is_in_fov(fov_map, *mouse_tile):
-                    entity_list = game_map.get_entities_at_tile(*mouse_tile)
-                    if len(entity_list) > 0:
-                        entity_names = name_entities(entity_list)
-                        message_log.add_message(Message('You see ' + entity_names + '.', libtcod.light_gray))
-
-        if right_click and GameStates.TARGETING:
-            game_state = previous_game_state
-            throwing = None
+                    console), player.x, player.y, *right_click)
+                look_message = get_look_message(*mouse_tile, game_map, fov_map, player)
+                if look_message:
+                    message_log.add_message(look_message)
 
         if direction:
             if game_state is GameStates.PLAYER_TURN:
@@ -227,7 +242,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             menu_selection = max(0, min(len(player.container.items) - 1, index))
 
         if select and game_state is GameStates.TARGETING:
-            do_throw = True
+            do_target = True
 
         if pickup and game_state is GameStates.PLAYER_TURN:
             entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
@@ -255,19 +270,21 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 player_results = {**player_results, **use_results}
                 player_acted = True
 
-        if throw:
-            if game_state is GameStates.INVENTORY:
-                if menu_selection < len(player.container.items):
-                    throwing = player.container.items[menu_selection]
-                    previous_game_state = GameStates.PLAYER_TURN
-                    game_state = GameStates.TARGETING
-                    key_cursor = (player.x, player.y)
-                    message_log.add_message(Message(
-                        'Left-click or navigate to a tile to throw. Right-click or escape to cancel.',
-                        libtcod.light_gray))
-            elif game_state is GameStates.TARGETING and throwing:
-                do_throw = True
-                pass
+        if throw and game_state is GameStates.INVENTORY:
+            if menu_selection < len(player.container.items):
+                throwing = player.container.items[menu_selection]
+                previous_game_state = GameStates.PLAYER_TURN
+                game_state = GameStates.TARGETING
+                key_cursor = (player.x, player.y)
+                message_log.add_message(Message(
+                    'Left-click or navigate to a tile to throw. Right-click or escape to cancel.', libtcod.light_gray))
+
+        if look and game_state is not GameStates.TARGETING:
+            previous_game_state = game_state
+            game_state = GameStates.TARGETING
+            looking = True
+            key_cursor = (player.x, player.y)
+            message_log.add_message(Message('Select a tile to look at. Escape to cancel.', libtcod.light_gray))
 
         if wait and game_state is GameStates.PLAYER_TURN:
             player_acted = True
@@ -296,13 +313,19 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, libtcod.light_gray))
 
         # Process actions with multiple triggers
-        if do_throw:
-            if (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
+        if do_target:
+            if looking:
+                look_message = get_look_message(*key_cursor, game_map, fov_map, player)
+                if look_message:
+                    message_log.add_message(look_message)
+                game_state = previous_game_state
+                looking = False
+            elif throwing and (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
                     game_map.is_tile_open(*key_cursor, check_entities=False):
                 if player.slots.is_equipped(throwing):
                     player.slots.toggle_equip(throwing)
                 throw_results = throwing.item.use(player, game_map, throwing=True, target_x=key_cursor[0],
-                                             target_y=key_cursor[1])
+                                                  target_y=key_cursor[1])
                 player_results = {**player_results, **throw_results}
                 game_state = previous_game_state
                 throwing = None

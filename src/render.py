@@ -123,7 +123,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
         if entities_at_cursor:
             names = name_entities(entities_at_cursor)
             if len(names) > screen_width - 2:
-                names = str(len(entities_at_cursor)) + ' entities (left-click to list all)'
+                names = str(len(entities_at_cursor)) + ' entities (right-click to list all)'
 
             libtcod.console_set_default_foreground(panel, libtcod.light_gray)
             libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, names)
@@ -143,7 +143,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Defense: {0}'.format(player.fighter.defense))
     libtcod.console_print_ex(panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
-                             'Damage:  {0}'.format(player.fighter.defense))
+                             'Damage:  {0}'.format(player.fighter.damage))
 
     libtcod.console_set_default_foreground(panel, libtcod.yellow)
     libtcod.console_print_ex(panel, 1, 5, libtcod.BKGND_NONE, libtcod.LEFT,
