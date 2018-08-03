@@ -1,4 +1,5 @@
-from enum import Enum, auto
+from copy import deepcopy
+from enum import Enum
 from math import atan2
 
 import libtcodpy as libtcod
@@ -39,7 +40,6 @@ class Entity:
         for component in Components:
             setattr(self, component.value, self.components.get(component.value))
 
-
     @property
     def definite_name(self):
         if self.is_name_proper:
@@ -62,6 +62,14 @@ class Entity:
         for component in self.components.values():
             if component:
                 component.owner = self
+
+    def clone(self, x, y):
+        clone = deepcopy(self)
+        clone.x = x
+        clone.y = y
+
+        return clone
+
     def move_to(self, x, y, game_map, face=False):
         if game_map.is_tile_open(x, y):
             if face and self.sight:

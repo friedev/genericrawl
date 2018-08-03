@@ -1,44 +1,7 @@
-from components.ai import BasicMonster
-from components.equipment import Equipment
-from components.fighter import Fighter
 from components.item import *
-from components.sight import Sight
-from components.slots import SlotTypes
-from entity import Entity
+from entity_templates import ENEMY_WEIGHTS, weighted_choice, get_weights_for_level, ITEM_WEIGHTS
 from map.dungeon_generator import *
 from map.tile import int_to_tile_map
-from render import RenderOrder
-
-
-def weighted_choice(weights):
-    weight_list = list(weights.values())
-    selection = randint(1, sum(weight_list))
-
-    weight_index = 0
-    choice_index = 0
-    for weight in weight_list:
-        weight_index += weight
-
-        if selection <= weight_index:
-            break
-
-        choice_index += 1
-
-    return list(weights.keys())[choice_index]
-
-
-def get_weights_for_level(weights, dungeon_level):
-    level_weights = weights.copy()
-    for key in weights.keys():
-        weight = weights[key]
-        if type(weight) is list:
-            if len(weight) > dungeon_level - 1:
-                level_weights[key] = weight[dungeon_level - 1]
-            else:
-                level_weights[key] = weight[len(weight) - 1]
-        else:
-            level_weights[key] = weight
-    return level_weights
 
 
 class GameMap:
@@ -101,36 +64,8 @@ class GameMap:
         return generator
 
     def place_entities(self, tiles_per_enemy, tiles_per_item, dungeon_level):
-        enemy_weights = {'goblin': [3, 2, 1, 1, 0], 'orc': [1, 2, 3, 2, 2, 1, 0], 'ogre': [0, 0, 0, 1],
-                         'troll': [0, 0, 0, 0, 1, 1, 2]}
-
-        item_weights = {
-            'weapon': 1,
-            'armor': 1,
-            'rock': 2,
-            'rune of healing': 4,
-            'rune of pain': 2,
-            'rune of might': 1,
-            'rune of protection': 1,
-            'rune of teleportation': 1
-        }
-
-        level_weapons = {
-            'dagger': [1, 2],
-            'shortsword': [3, 4],
-            'arming sword': [5, 6],
-            'longsword': [7, 8]
-        }
-
-        level_armor = {
-            'gambeson': [1, 2],
-            'leather cuirass': [3, 4],
-            'chain hauberk': [5, 6],
-            'plate armor': [7, 8]
-        }
-
-        level_enemy_weights = get_weights_for_level(enemy_weights, dungeon_level)
-        level_item_weights = get_weights_for_level(item_weights, dungeon_level)
+        level_enemy_weights = get_weights_for_level(ENEMY_WEIGHTS, dungeon_level)
+        level_item_weights = get_weights_for_level(ITEM_WEIGHTS, dungeon_level)
 
         open_tiles = self.get_all_open_tiles(include_entities=False)
 
@@ -142,38 +77,8 @@ class GameMap:
             tile = choice(unoccupied_tiles)
             unoccupied_tiles.remove(tile)
 
-            enemy_choice = weighted_choice(level_enemy_weights)
-
-            # Normal enemies will be able to see 2 fewer tiles than the player
-            # This means that the player will have a chance to avoid enemies when walking in the open
-            sight_component = Sight()
-            sight_component.fov_radius -= 2
-
-            if enemy_choice == 'goblin':
-                char = 'g'
-                color = libtcod.darker_green
-                fighter_component = Fighter(hp=5, defense=0, attack=1, damage=1)
-                ai_component = BasicMonster()
-            elif enemy_choice == 'orc':
-                char = 'o'
-                color = libtcod.green
-                fighter_component = Fighter(hp=8, defense=1, attack=1, damage=2)
-                ai_component = BasicMonster()
-            elif enemy_choice == 'ogre':
-                char = 'O'
-                color = libtcod.darker_green
-                fighter_component = Fighter(hp=16, defense=3, attack=3, damage=4)
-                ai_component = BasicMonster()
-            else:
-                char = 'T'
-                color = libtcod.darker_gray
-                fighter_component = Fighter(hp=24, defense=7, attack=5, damage=8)
-                ai_component = BasicMonster()
-
-            entity = Entity(*tile, char, color, enemy_choice, render_order=RenderOrder.ENEMY,
-                            components={'sight': sight_component, 'fighter': fighter_component, 'ai': ai_component})
-
-            self.entities.append(entity)
+            enemy = weighted_choice(level_enemy_weights).value.clone(*tile)
+            self.entities.append(enemy)
 
         n_items = int(len(open_tiles) / tiles_per_item)
         for i in range(n_items):
@@ -181,95 +86,8 @@ class GameMap:
             tile = choice(open_tiles)
             open_tiles.remove(tile)
 
-            item_choice = weighted_choice(level_item_weights)
-            equipment_component = None
-
-            if item_choice == 'weapon':
-                for key in level_weapons.keys():
-                    value = level_weapons[key]
-                    if self.dungeon_level in value:
-                        item_choice = key
-                        break
-
-                char = ')'
-                color = libtcod.lighter_gray
-                item_component = Item(use_function=equip)
-
-                if item_choice == 'dagger':
-                    attack_bonus = 1
-                    damage_bonus = 1
-                elif item_choice == 'shortsword':
-                    attack_bonus = 3
-                    damage_bonus = 3
-                elif item_choice == 'arming sword':
-                    attack_bonus = 5
-                    damage_bonus = 5
-                else:
-                    attack_bonus = 7
-                    damage_bonus = 7
-
-                equipment_component = Equipment(SlotTypes.WEAPON, attack_bonus=attack_bonus, damage_bonus=damage_bonus)
-
-            elif item_choice == 'armor':
-                for key in level_armor.keys():
-                    value = level_armor[key]
-                    if self.dungeon_level in value:
-                        item_choice = key
-                        break
-
-                char = '['
-                color = libtcod.lighter_gray
-                item_component = Item(use_function=equip)
-
-                if item_choice == 'gambeson':
-                    defense_bonus = 1
-                    max_hp_bonus = 5
-                elif item_choice == 'leather cuirass':
-                    defense_bonus = 3
-                    max_hp_bonus = 15
-                elif item_choice == 'chain hauberk':
-                    defense_bonus = 5
-                    max_hp_bonus = 25
-                else:
-                    defense_bonus = 7
-                    max_hp_bonus = 35
-
-                equipment_component = Equipment(SlotTypes.ARMOR, defense_bonus=defense_bonus, max_hp_bonus=max_hp_bonus)
-
-            elif item_choice == 'rock':
-                char = '*'
-                color = libtcod.darker_gray
-                item_component = Item(use_function=None, throw_function=throw_std, amount=4)
-
-            elif item_choice == 'rune of healing':
-                char = '*'
-                color = libtcod.dark_green
-                item_component = Item(use_function=heal, throw_function=heal, amount=1 / 3)
-
-            elif item_choice == 'rune of pain':
-                char = '*'
-                color = libtcod.red
-                item_component = Item(use_function=pain, throw_function=pain, amount=0.5)
-
-            elif item_choice == 'rune of might':
-                char = '*'
-                color = libtcod.yellow
-                item_component = Item(use_function=might, throw_function=might, amount=1)
-
-            elif item_choice == 'rune of protection':
-                char = '*'
-                color = libtcod.blue
-                item_component = Item(use_function=protection, throw_function=protection, amount=1)
-
-            elif item_choice == 'rune of teleportation':
-                char = '*'
-                color = libtcod.magenta
-                item_component = Item(use_function=teleportation, throw_function=teleportation)
-
-            entity = Entity(*tile, char, color, item_choice, blocks=False, render_order=RenderOrder.ITEM,
-                            components={'item': item_component, 'equipment': equipment_component})
-
-            self.entities.append(entity)
+            item = weighted_choice(level_item_weights).value.clone(*tile)
+            self.entities.append(item)
 
     def generate_fov_map(self):
         fov_map = libtcod.map_new(self.width, self.height)
