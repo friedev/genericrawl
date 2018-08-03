@@ -169,7 +169,7 @@ class GameMap:
                 ai_component = BasicMonster()
 
             entity = Entity(*tile, char, color, enemy_choice, render_order=RenderOrder.ENEMY,
-                            sight=sight_component, fighter=fighter_component, ai=ai_component)
+                            components={'sight': sight_component, 'fighter': fighter_component, 'ai': ai_component})
 
             self.entities.append(entity)
 
@@ -264,7 +264,7 @@ class GameMap:
                 item_component = Item(use_function=teleportation, throw_function=teleportation)
 
             entity = Entity(*tile, char, color, item_choice, blocks=False, render_order=RenderOrder.ITEM,
-                            item=item_component, equipment=equipment_component)
+                            components={'item': item_component, 'equipment': equipment_component})
 
             self.entities.append(entity)
 

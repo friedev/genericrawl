@@ -101,8 +101,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
     player_slots = Slots()
     player_container = Container(26)
     player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
-                    render_order=RenderOrder.PLAYER, sight=player_sight, fighter=player_fighter, slots=player_slots,
-                    container=player_container)
+                    render_order=RenderOrder.PLAYER, components={'sight': player_sight, 'fighter': player_fighter,
+                                                                 'slots': player_slots, 'container': player_container})
     game_map.entities.append(player)
 
     recompute_fov = True

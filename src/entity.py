@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from math import atan2
 
 import libtcodpy as libtcod
@@ -6,13 +7,23 @@ from game_messages import Message
 from render import RenderOrder
 
 
+class Components(Enum):
+    SIGHT = 'sight'
+    FIGHTER = 'fighter'
+    SLOTS = 'slots'
+    AI = 'ai'
+    ITEM = 'item'
+    EQUIPMENT = 'equipment'
+    CONTAINER = 'container'
+
+
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
 
     def __init__(self, x, y, char, color, name, is_name_proper=False, blocks=True, render_order=RenderOrder.CORPSE,
-                 sight=None, fighter=None, slots=None, ai=None, item=None, equipment=None, container=None):
+                 components={}):
         self.x = x
         self.y = y
         self.char = char
@@ -21,35 +32,13 @@ class Entity:
         self.is_name_proper = is_name_proper
         self.blocks = blocks
         self.render_order = render_order
+        self.components = components
 
-        self.sight = sight
-        self.fighter = fighter
-        self.slots = slots
-        self.ai = ai
-        self.item = item
-        self.equipment = equipment
-        self.container = container
+        self.update_components_owner()
 
-        if self.sight:
-            self.sight.owner = self
+        for component in Components:
+            setattr(self, component.value, self.components.get(component.value))
 
-        if self.fighter:
-            self.fighter.owner = self
-
-        if self.slots:
-            self.slots.owner = self
-
-        if self.ai:
-            self.ai.owner = self
-
-        if self.item:
-            self.item.owner = self
-
-        if self.equipment:
-            self.equipment.owner = self
-
-        if self.container:
-            self.container.owner = self
 
     @property
     def definite_name(self):
@@ -69,6 +58,10 @@ class Entity:
             else:
                 return 'a ' + self.name
 
+    def update_components_owner(self):
+        for component in self.components.values():
+            if component:
+                component.owner = self
     def move_to(self, x, y, game_map, face=False):
         if game_map.is_tile_open(x, y):
             if face and self.sight:
@@ -106,12 +99,3 @@ class Entity:
             self.ai = None
 
         return death_message
-
-
-class EntityTemplate:
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-    def create(self, x, y):
-        return copy
