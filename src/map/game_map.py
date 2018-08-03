@@ -138,33 +138,35 @@ class GameMap:
         unoccupied_tiles = open_tiles.copy()
         n_enemies = int(len(open_tiles) / tiles_per_enemy)
         for i in range(n_enemies):
+            # The tile in which this entity is placed will no longer be unoccupied
             tile = choice(unoccupied_tiles)
             unoccupied_tiles.remove(tile)
 
             enemy_choice = weighted_choice(level_enemy_weights)
 
+            # Normal enemies will be able to see 2 fewer tiles than the player
+            # This means that the player will have a chance to avoid enemies when walking in the open
+            sight_component = Sight()
+            sight_component.fov_radius -= 2
+
             if enemy_choice == 'goblin':
                 char = 'g'
                 color = libtcod.darker_green
-                sight_component = Sight()
                 fighter_component = Fighter(hp=5, defense=0, attack=1, damage=1)
                 ai_component = BasicMonster()
             elif enemy_choice == 'orc':
                 char = 'o'
                 color = libtcod.green
-                sight_component = Sight()
                 fighter_component = Fighter(hp=8, defense=1, attack=1, damage=2)
                 ai_component = BasicMonster()
             elif enemy_choice == 'ogre':
                 char = 'O'
                 color = libtcod.darker_green
-                sight_component = Sight()
                 fighter_component = Fighter(hp=16, defense=3, attack=3, damage=4)
                 ai_component = BasicMonster()
             else:
                 char = 'T'
                 color = libtcod.darker_gray
-                sight_component = Sight()
                 fighter_component = Fighter(hp=24, defense=7, attack=5, damage=8)
                 ai_component = BasicMonster()
 
@@ -175,6 +177,7 @@ class GameMap:
 
         n_items = int(len(open_tiles) / tiles_per_item)
         for i in range(n_items):
+            # The tile in which this item is placed will no longer be open
             tile = choice(open_tiles)
             open_tiles.remove(tile)
 

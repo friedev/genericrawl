@@ -378,7 +378,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             enemy_fov_map = game_map.generate_fov_map_with_entities()
             for entity in game_map.entities:
                 if entity.ai:
-                    enemy_results = entity.ai.act(game_map, player, enemy_fov_map)
+                    enemy_results = entity.ai.act(game_map, player, enemy_fov_map,
+                                                  libtcod.map_is_in_fov(fov_map, entity.x, entity.y))
 
                     # Process enemy turn results
                     attack_message = enemy_results.get('attack_message')
