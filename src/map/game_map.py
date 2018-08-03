@@ -101,10 +101,33 @@ class GameMap:
         return generator
 
     def place_entities(self, tiles_per_enemy, tiles_per_item, dungeon_level):
-        enemy_weights = {'goblin': [3, 2, 1, 0], 'orc': [1, 2, 3, 2, 1, 0], 'ogre': [0, 0, 1],
+        enemy_weights = {'goblin': [3, 2, 1, 1, 0], 'orc': [1, 2, 3, 2, 2, 1, 0], 'ogre': [0, 0, 0, 1],
                          'troll': [0, 0, 0, 0, 1, 1, 2]}
-        item_weights = {'sword': [0, 0, 1], 'armor': [0, 0, 1], 'rock': 2, 'rune of healing': 4, 'rune of pain': 2,
-                        'rune of might': 1, 'rune of protection': 1, 'rune of teleportation': 1}
+
+        item_weights = {
+            'weapon': 1,
+            'armor': 1,
+            'rock': 2,
+            'rune of healing': 4,
+            'rune of pain': 2,
+            'rune of might': 1,
+            'rune of protection': 1,
+            'rune of teleportation': 1
+        }
+
+        level_weapons = {
+            'dagger': [1, 2],
+            'shortsword': [3, 4],
+            'arming sword': [5, 6],
+            'longsword': [7, 8]
+        }
+
+        level_armor = {
+            'gambeson': [1, 2],
+            'leather cuirass': [3, 4],
+            'chain hauberk': [5, 6],
+            'plate armor': [7, 8]
+        }
 
         level_enemy_weights = get_weights_for_level(enemy_weights, dungeon_level)
         level_item_weights = get_weights_for_level(item_weights, dungeon_level)
@@ -124,25 +147,25 @@ class GameMap:
                 char = 'g'
                 color = libtcod.darker_green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=10, defense=0, attack=3)
+                fighter_component = Fighter(hp=5, defense=0, attack=1, damage=1)
                 ai_component = BasicMonster()
             elif enemy_choice == 'orc':
                 char = 'o'
                 color = libtcod.green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=10, defense=2, attack=3)
+                fighter_component = Fighter(hp=8, defense=1, attack=1, damage=2)
                 ai_component = BasicMonster()
             elif enemy_choice == 'ogre':
                 char = 'O'
                 color = libtcod.darker_green
                 sight_component = Sight()
-                fighter_component = Fighter(hp=20, defense=3, attack=6)
+                fighter_component = Fighter(hp=16, defense=3, attack=3, damage=4)
                 ai_component = BasicMonster()
             else:
                 char = 'T'
                 color = libtcod.darker_gray
                 sight_component = Sight()
-                fighter_component = Fighter(hp=30, defense=4, attack=6)
+                fighter_component = Fighter(hp=24, defense=7, attack=5, damage=8)
                 ai_component = BasicMonster()
 
             entity = Entity(*tile, char, color, enemy_choice, render_order=RenderOrder.ENEMY,
@@ -158,17 +181,57 @@ class GameMap:
             item_choice = weighted_choice(level_item_weights)
             equipment_component = None
 
-            if item_choice == 'sword':
-                char = '/'
+            if item_choice == 'weapon':
+                for key in level_weapons.keys():
+                    value = level_weapons[key]
+                    if self.dungeon_level in value:
+                        item_choice = key
+                        break
+
+                char = ')'
                 color = libtcod.lighter_gray
                 item_component = Item(use_function=equip)
-                equipment_component = Equipment(SlotTypes.WEAPON, attack_bonus=2)
+
+                if item_choice == 'dagger':
+                    attack_bonus = 1
+                    damage_bonus = 1
+                elif item_choice == 'shortsword':
+                    attack_bonus = 3
+                    damage_bonus = 3
+                elif item_choice == 'arming sword':
+                    attack_bonus = 5
+                    damage_bonus = 5
+                else:
+                    attack_bonus = 7
+                    damage_bonus = 7
+
+                equipment_component = Equipment(SlotTypes.WEAPON, attack_bonus=attack_bonus, damage_bonus=damage_bonus)
 
             elif item_choice == 'armor':
+                for key in level_armor.keys():
+                    value = level_armor[key]
+                    if self.dungeon_level in value:
+                        item_choice = key
+                        break
+
                 char = '['
                 color = libtcod.lighter_gray
                 item_component = Item(use_function=equip)
-                equipment_component = Equipment(SlotTypes.ARMOR, defense_bonus=2)
+
+                if item_choice == 'gambeson':
+                    defense_bonus = 1
+                    max_hp_bonus = 5
+                elif item_choice == 'leather cuirass':
+                    defense_bonus = 3
+                    max_hp_bonus = 15
+                elif item_choice == 'chain hauberk':
+                    defense_bonus = 5
+                    max_hp_bonus = 25
+                else:
+                    defense_bonus = 7
+                    max_hp_bonus = 35
+
+                equipment_component = Equipment(SlotTypes.ARMOR, defense_bonus=defense_bonus, max_hp_bonus=max_hp_bonus)
 
             elif item_choice == 'rock':
                 char = '*'

@@ -45,6 +45,17 @@ class Slots:
 
         return bonus
 
+    @property
+    def damage_bonus(self):
+        bonus = 0
+
+        for item in self.slot_dict.values():
+            if item:
+                bonus += item.equipment.damage_bonus
+
+        return bonus
+
+
     def toggle_equip(self, item):
         if not item.equipment:
             return False

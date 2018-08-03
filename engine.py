@@ -86,7 +86,7 @@ def main():
 def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
     game_map = GameMap(map_width, map_height, 1)
     player_sight = Sight()
-    player_fighter = Fighter(hp=50, defense=0, attack=4)
+    player_fighter = Fighter(hp=10, defense=1, attack=1, damage=2)
     player_slots = Slots()
     player_container = Container(26)
     player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
@@ -308,6 +308,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if do_throw:
             if (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
                     game_map.is_tile_open(*key_cursor, check_entities=False):
+                if player.slots.is_equipped(throwing):
+                    player.slots.toggle_equip(throwing)
                 throw_results = throwing.use(player, game_map, throwing=True, target_x=key_cursor[0],
                                              target_y=key_cursor[1])
                 player_results = {**player_results, **throw_results}

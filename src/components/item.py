@@ -34,6 +34,8 @@ def equip(*args, **kwargs):
     elif unequipped:
         results['use_message'] = Message('You unequip {0}.'.format(unequipped.definite_name), libtcod.light_blue)
 
+    user.fighter.hp = min(user.fighter.hp, user.fighter.max_hp)
+
     return results
 
 
@@ -55,13 +57,12 @@ def throw_std(*args, **kwargs):
     if not amount:
         amount = randint(1, 4)
 
-    results = {**results, **target.fighter.damage(amount)}
-    if results.get('damage') > 0:
-        results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name,
-                                                                           target.definite_name,
-                                                                           results['damage']))
+    results = {**results, **target.fighter.take_damage(amount)}
+    if amount > 0:
+        results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name.capitalize(),
+                                                                           target.definite_name, amount))
     else:
-        results['use_message'] = Message('{0} bounces off {1} harmlessly.'.format(item.definite_name,
+        results['use_message'] = Message('{0} bounces off {1} harmlessly.'.format(item.definite_name.capitalize(),
                                                                                   target.definite_name))
     return results
 
@@ -103,7 +104,8 @@ def heal(*args, **kwargs):
             results['use_message'] = Message('You feel rejuvenated! You recover {0} HP.'.format(amount_healed),
                                              libtcod.green)
         else:
-            results['use_message'] = Message('{0} recovers {1} HP.'.format(target.definite_name, amount_healed),
+            results['use_message'] = Message('{0} recovers {1} HP.'.format(target.definite_name.capitalize(),
+                                                                           amount_healed),
                                              libtcod.green)
 
     return results
@@ -130,13 +132,13 @@ def pain(*args, **kwargs):
     else:
         actual_amount = amount
 
-    results = target.fighter.damage(actual_amount, ignore_defense=True)
+    results = target.fighter.take_damage(actual_amount)
     results['item_consumed'] = item
     if player_using:
         results['use_message'] = Message('You feel a searing pain! You lose {0} HP.'.format(actual_amount),
                                          libtcod.red)
     else:
-        results['use_message'] = Message('{0} loses {1} HP.'.format(target.definite_name, actual_amount),
+        results['use_message'] = Message('{0} loses {1} HP.'.format(target.definite_name.capitalize(), actual_amount),
                                          libtcod.red)
 
     return results
@@ -170,7 +172,8 @@ def might(*args, **kwargs):
         results['use_message'] = Message('Your muscles grow rapidly! You gain {0} attack.'.format(actual_amount),
                                          libtcod.yellow)
     else:
-        results['use_message'] = Message('{0} appears stronger.'.format(target.definite_name), libtcod.yellow)
+        results['use_message'] = Message('{0} appears stronger.'.format(target.definite_name.capitalize()),
+                                         libtcod.yellow)
 
     return results
 
@@ -203,7 +206,8 @@ def protection(*args, **kwargs):
         results['use_message'] = Message('Your body feels tougher! You gain {0} defense.'.format(actual_amount),
                                          libtcod.yellow)
     else:
-        results['use_message'] = Message('{0} appears more resilient.'.format(target.definite_name), libtcod.yellow)
+        results['use_message'] = Message('{0} appears more resilient.'.format(target.definite_name.capitalize()),
+                                         libtcod.yellow)
 
     return results
 
@@ -232,7 +236,8 @@ def teleportation(*args, **kwargs):
                                          libtcod.magenta)
         results['recompute_fov'] = True
     else:
-        results['use_message'] = Message('{0} suddenly vanishes.'.format(target.definite_name), libtcod.yellow)
+        results['use_message'] = Message('{0} suddenly vanishes.'.format(target.definite_name.capitalize()),
+                                         libtcod.yellow)
 
     return results
 

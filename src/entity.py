@@ -106,3 +106,12 @@ class Entity:
             self.ai = None
 
         return death_message
+
+
+class EntityTemplate:
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def create(self, x, y):
+        return copy

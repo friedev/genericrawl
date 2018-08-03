@@ -142,6 +142,8 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
                              'Attack:  {0}'.format(player.fighter.attack))
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Defense: {0}'.format(player.fighter.defense))
+    libtcod.console_print_ex(panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Damage:  {0}'.format(player.fighter.defense))
 
     libtcod.console_set_default_foreground(panel, libtcod.yellow)
     libtcod.console_print_ex(panel, 1, 5, libtcod.BKGND_NONE, libtcod.LEFT,
