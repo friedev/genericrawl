@@ -125,8 +125,9 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         direction = action.get('direction')
         inventory = action.get('inventory')
-        pickup = action.get('pickup')
+        index = action.get('index')
         select = action.get('select')
+        pickup = action.get('pickup')
         drop = action.get('drop')
         use = action.get('use')
         throw = action.get('throw')
@@ -184,8 +185,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                         elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
                             game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
 
-                            player.fighter.base_max_hp += 10
-                            player.fighter.hp += 10
+                            # player.fighter.base_max_hp += 10
+                            player.fighter.hp += player.fighter.max_hp
                             player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
                             game_map.entities.append(player)
 
@@ -221,6 +222,13 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 previous_game_state = game_state
                 game_state = GameStates.INVENTORY
 
+        # is not None check is required since 0 evaluates to False
+        if index is not None and game_state is GameStates.INVENTORY:
+            menu_selection = max(0, min(len(player.container.items) - 1, index))
+
+        if select and game_state is GameStates.TARGETING:
+            do_throw = True
+
         if pickup and game_state is GameStates.PLAYER_TURN:
             entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
             for entity in entities_at_tile:
@@ -241,9 +249,6 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 game_map.entities.append(item)
                 player_acted = True
 
-        if select and game_state is GameStates.TARGETING:
-            do_throw = True
-
         if use and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
                 use_results = player.container.items[menu_selection].item.use(player, game_map)
@@ -253,7 +258,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if throw:
             if game_state is GameStates.INVENTORY:
                 if menu_selection < len(player.container.items):
-                    throwing = player.container.items[menu_selection].item
+                    throwing = player.container.items[menu_selection]
                     previous_game_state = GameStates.PLAYER_TURN
                     game_state = GameStates.TARGETING
                     key_cursor = (player.x, player.y)
@@ -296,7 +301,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                     game_map.is_tile_open(*key_cursor, check_entities=False):
                 if player.slots.is_equipped(throwing):
                     player.slots.toggle_equip(throwing)
-                throw_results = throwing.use(player, game_map, throwing=True, target_x=key_cursor[0],
+                throw_results = throwing.item.use(player, game_map, throwing=True, target_x=key_cursor[0],
                                              target_y=key_cursor[1])
                 player_results = {**player_results, **throw_results}
                 game_state = previous_game_state
