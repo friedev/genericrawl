@@ -45,7 +45,8 @@ class KeyMap:
 
 
 class InputScheme:
-    def __init__(self, keymaps):
+    def __init__(self, name, keymaps):
+        self.name = name
         self.keymaps = keymaps
 
     def handle_key(self, key, game_state):
@@ -75,7 +76,7 @@ NORTHEAST = {'direction': (1, -1)}
 SOUTHWEST = {'direction': (-1, 1)}
 SOUTHEAST = {'direction': (1, 1)}
 
-GLOBAL = InputScheme(
+GLOBAL = InputScheme('Global',
     {
         None: KeyMap(
             {
@@ -113,7 +114,7 @@ GLOBAL = InputScheme(
 
 
 class InputSchemes(Enum):
-    LEFT_HAND = InputScheme(
+    LEFT_HAND = InputScheme('Left Hand (waxdqezc)',
     {
         None: KeyMap(
             {
@@ -138,7 +139,8 @@ class InputSchemes(Enum):
             })
     })
 
-    VI = InputScheme({
+    VI = InputScheme('VI (hjklyubn)',
+    {
         None: KeyMap({},
             {
                 'h': WEST,
@@ -152,7 +154,8 @@ class InputSchemes(Enum):
             })
     })
 
-    NUMPAD = InputScheme({
+    NUMPAD = InputScheme('Number Pad',
+    {
         None: KeyMap(
             {
                 libtcod.KEY_KP1: SOUTHWEST,

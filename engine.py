@@ -31,19 +31,16 @@ def move_cursor(key_cursor, dx, dy):
 
 
 def cycle_scheme(scheme, scheme_enum, direction_input):
-    if direction_input < 0:
-        direction_input = -1
-    else:
-        direction_input = 1
+    scheme_list = list(scheme_enum)
+    index = scheme_list.index(scheme)
+    new_index = index + direction_input
 
-    previous_scheme = None
-    for current_scheme in scheme_enum:
-        if current_scheme.value == scheme and direction_input == -1:
-            if previous_scheme:
-                return previous_scheme.value
-        elif previous_scheme and previous_scheme.value == scheme and direction_input == 1:
-            return current_scheme.value
-        previous_scheme = current_scheme
+    if new_index < 0:
+        return scheme_list[len(scheme_list) - 1]
+    elif new_index >= len(scheme_list):
+        return scheme_list[0]
+    else:
+        return scheme_list[new_index]
 
 
 def main():
@@ -75,8 +72,8 @@ def main():
     panel = libtcod.console_new(panel_width, panel_height)
     message_log = MessageLog(message_x, message_width, message_height)
 
-    input_scheme = InputSchemes.VI.value
-    color_scheme = ColorSchemes.SOLID.value
+    input_scheme = InputSchemes.VI
+    color_scheme = ColorSchemes.SOLID
 
     restart = True
     while restart:
@@ -112,7 +109,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if recompute_fov:
             player.sight.get_fov(fov_map, memory)
 
-        render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
+        render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme.value,
                    game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
@@ -121,7 +118,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         recompute_fov = False
 
         mouse_action = handle_mouse(mouse)
-        action = input_scheme.handle_key(key, game_state)
+        action = input_scheme.value.handle_key(key, game_state)
 
         left_click = mouse_action.get('left_click')
         right_click = mouse_action.get('right_click')
@@ -287,22 +284,11 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         if color_scheme_input:
             color_scheme = cycle_scheme(color_scheme, ColorSchemes, color_scheme_input)
+            message_log.add_message(Message('Color Scheme: ' + color_scheme.value.name, libtcod.light_gray))
 
         if input_scheme_input:
             input_scheme = cycle_scheme(input_scheme, InputSchemes, input_scheme_input)
-
-        # TODO combine with above code
-        if input_scheme_input:
-            previous_scheme = None
-            for current_scheme in InputSchemes:
-                if current_scheme.value == input_scheme and color_scheme_input == -1:
-                    if previous_scheme:
-                        input_scheme = previous_scheme.value
-                    break
-                elif previous_scheme and previous_scheme.value == input_scheme and color_scheme_input == 1:
-                    input_scheme = current_scheme.value
-                    break
-                previous_scheme = current_scheme
+            message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, libtcod.light_gray))
 
         # Process actions with multiple triggers
         if do_throw:

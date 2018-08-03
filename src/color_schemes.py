@@ -47,7 +47,9 @@ DEFAULT_COLORS = generate_tile_dict(libtcod.light_blue, libtcod.dark_blue, libtc
 
 
 class ColorScheme:
-    def __init__(self, foreground=DEFAULT_COLORS, background=DEFAULT_COLORS, memory_brightness_mod=32, allow_fade=True):
+    def __init__(self, name, foreground=DEFAULT_COLORS, background=DEFAULT_COLORS, memory_brightness_mod=32,
+                 allow_fade=True):
+        self.name = name
         self.background = background if background else generate_monochrome_dict(libtcod.black)
         self.foreground = foreground if foreground else background
         self.memory_brightness_mod = memory_brightness_mod
@@ -58,12 +60,12 @@ class ColorScheme:
 
 
 class ColorSchemes(Enum):
-    CLASSIC = ColorScheme(foreground=generate_monochrome_dict(libtcod.lightest_gray), background=None,
+    CLASSIC = ColorScheme('Classic', foreground=generate_monochrome_dict(libtcod.lightest_gray), background=None,
                           memory_brightness_mod=64, allow_fade=False)
-    CLASSIC_COLORED = ColorScheme(foreground=color_dict_change_brightness(DEFAULT_COLORS, 32), background=None,
-                                  allow_fade=False)
-    SOLID = ColorScheme()
-    COMBO = ColorScheme(foreground=color_dict_change_brightness(DEFAULT_COLORS, 32))
+    CLASSIC_COLORED = ColorScheme('Classic Colored', foreground=color_dict_change_brightness(DEFAULT_COLORS, 32), \
+                                  background=None, allow_fade=False)
+    SOLID = ColorScheme('Solid')
+    COMBO = ColorScheme('Combo', foreground=color_dict_change_brightness(DEFAULT_COLORS, 32))
 
 
 def init_color_schemes():
