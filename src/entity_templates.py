@@ -29,11 +29,14 @@ def create_armor(name, defense, max_hp, char='[', color=libtcod.lighter_gray, is
                               'equipment': Equipment(SlotTypes.ARMOR, defense_bonus=defense, max_hp_bonus=max_hp)})
 
 
-def create_rune(color, name, rune_function, char='*', is_name_proper=False, throw_function=None, **kwargs):
+def create_rune(color, name, rune_function, char='*', is_name_proper=False, combine_function=None, throw_function=None,
+                **kwargs):
+    if not combine_function:
+        combine_function = rune_function
     if not throw_function:
         throw_function = rune_function
     return Entity(0, 0, char, color, name, is_name_proper=is_name_proper, blocks=False, render_order=RenderOrder.ITEM,
-                  components={'item': Item(rune_function, throw_function, **kwargs)})
+                  components={'item': Item(rune_function, combine_function, throw_function, **kwargs)})
 
 
 class EntityTemplates(Enum):
@@ -57,25 +60,30 @@ class EntityTemplates(Enum):
 
     # Runes
     ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)
-    RUNE_HEALING = create_rune(libtcod.darker_green, 'rune of healing', heal, amount=1/3)
-    RUNE_PAIN = create_rune(libtcod.red, 'rune of pain', pain, amount=0.5)
-    RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=1, duration=10)
-    RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=1, duration=10)
+    RUNE_HEALING = create_rune(libtcod.darker_green, 'rune of healing', heal, amount=0.5, weapon_amount=-2,
+                               armor_amount=5)
+    RUNE_PAIN = create_rune(libtcod.red, 'rune of pain', pain, amount=0.5, weapon_amount=2, armor_amount=-5)
+    RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=3, duration=10, weapon_amount=1)
+    RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=3, duration=10, armor_amount=1)
     RUNE_TELEPORTATION = create_rune(libtcod.magenta, 'rune of teleportation', teleportation)
 
 
 def weight_range(value, start, end):
-    weights = [value in range(start, end + 1), 0]
-    if start > 0:
-        weights.insert(0, 0)
+    weights = []
+    for i in range(0, end + 2):
+        if i in range(start, end):
+            weights.append(value)
+        else:
+            weights.append(0)
+
     return weights
 
 
 ENEMY_WEIGHTS = {
-    EntityTemplates.GOBLIN: [3, 2, 1, 1, 0],
-    EntityTemplates.ORC: [1, 2, 3, 2, 2, 1, 0],
-    EntityTemplates.OGRE: [0, 0, 0, 1],
-    EntityTemplates.TROLL: [0, 0, 0, 0, 1, 1, 2]
+    EntityTemplates.GOBLIN: [1, 3, 1, 1, 0],
+    EntityTemplates.ORC:    [0, 2, 3, 2, 2, 1, 0],
+    EntityTemplates.OGRE:   [0, 0, 0, 1],
+    EntityTemplates.TROLL:  [0, 0, 0, 0, 1, 1, 2]
 }
 
 ITEM_WEIGHTS = {

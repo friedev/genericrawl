@@ -93,6 +93,7 @@ GLOBAL = InputScheme('Global',
                 'd': {'drop': True},
                 ' ': {'select': True},
                 'e': {'use': True},
+                'r': {'combine': True},
                 't': {'throw': True},
                 'l': {'look': True},
 
@@ -141,15 +142,14 @@ class InputSchemes(Enum):
                 'd': EAST,
                 'z': SOUTHWEST,
                 'x': SOUTH,
-                'c': SOUTHEAST
-            }),
-        GameStates.PLAYER_TURN: KeyMap({},
-            {
+                'c': SOUTHEAST,
+
                 's': {'wait': True},
-                'v': {'drop': True},
+                'b': {'drop': True},
                 'r': {'use': True},
-                'f': {'look': True}
-            })
+                'f': {'combine': True},
+                'v': {'look': True}
+            }),
     })
 
     VI = InputScheme('VI (hjklyubn)',

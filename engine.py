@@ -5,7 +5,7 @@ from components.sight import Sight
 from components.slots import Slots
 from entity import Entity
 from fov import *
-from game_messages import MessageLog, Message
+from game_messages import MessageLog, Message, join_list
 from game_states import GameStates
 from input import InputSchemes, handle_mouse
 from map.game_map import GameMap
@@ -118,6 +118,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
     key_cursor = (0, 0)
     menu_selection = 0
     looking = False
+    combining = None
     throwing = None
 
     while not libtcod.console_is_window_closed():
@@ -145,6 +146,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         pickup = action.get('pickup')
         drop = action.get('drop')
         use = action.get('use')
+        combine = action.get('combine')
         throw = action.get('throw')
         look = action.get('look')
         wait = action.get('wait')
@@ -157,6 +159,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         player_results = {}
         player_acted = False
 
+        do_use = False
+        combine_target = None
         do_target = False
 
         if left_click and game_state is GameStates.TARGETING:
@@ -181,14 +185,19 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 move = action.get('move')
                 # face = action.get('face')
                 dx, dy = direction
-
                 # moved = False
 
                 if move:
                     if player.move(dx, dy, game_map, face=False):
                         player_acted = True
                         recompute_fov = True
-                        moved = True
+
+                        entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
+                        entities_at_tile.remove(player)
+                        if entities_at_tile:
+                            message_log.add_message(Message('You see {0}.'.format(join_list([
+                                entity.indefinite_name for entity in entities_at_tile])), libtcod.light_gray))
+                        # moved = True
                     else:
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
                         if blocking_entities:
@@ -196,7 +205,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             attack_results = player.fighter.attack_entity(target.fighter)
                             player_results.update(attack_results)
                             player_acted = True
-                            moved = True
+                            # moved = True
                         elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
                             game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
 
@@ -238,11 +247,20 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 game_state = GameStates.INVENTORY
 
         # is not None check is required since 0 evaluates to False
-        if index is not None and game_state is GameStates.INVENTORY:
-            menu_selection = max(0, min(len(player.container.items) - 1, index))
+        if index is not None:
+            if game_state is GameStates.INVENTORY:
+                menu_selection = max(0, min(len(player.container.items) - 1, index))
+                if combining and len(player.container.items):
+                    combine_target = player.container.items[menu_selection]
 
-        if select and game_state is GameStates.TARGETING:
-            do_target = True
+        if select:
+            if game_state is GameStates.INVENTORY:
+                if combining and menu_selection < len(player.container.items):
+                    combine_target = player.container.items[menu_selection]
+                else:
+                    do_use = True
+            elif game_state is GameStates.TARGETING:
+                do_target = True
 
         if pickup and game_state is GameStates.PLAYER_TURN:
             entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
@@ -265,10 +283,16 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 player_acted = True
 
         if use and game_state is GameStates.INVENTORY:
+            do_use = True
+
+        if combine and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
-                use_results = player.container.items[menu_selection].item.use(player, game_map)
-                player_results.update(use_results)
-                player_acted = True
+                selected_item = player.container.items[menu_selection]
+                if not combining:
+                    combining = selected_item
+                else:
+                    combine_target = selected_item
+                previous_game_state = GameStates.PLAYER_TURN
 
         if throw and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
@@ -295,6 +319,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if exit:
             if game_state is GameStates.INVENTORY:
                 game_state = previous_game_state
+                combining = None
             elif game_state is GameStates.TARGETING:
                 game_state = previous_game_state
                 throwing = None
@@ -313,6 +338,36 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, libtcod.light_gray))
 
         # Process actions with multiple triggers
+        if do_use:
+            if menu_selection < len(player.container.items):
+                use_results = player.container.items[menu_selection].item.use(player, game_map)
+                player_results.update(use_results)
+                player_acted = True
+
+        if combine_target:
+            if combining is combine_target:
+                message_log.add_message(Message('An item cannot be combined with itself.', libtcod.yellow))
+            else:
+                result = None
+                if combining.item.combine_function:
+                    result = combining.item.use(player, game_map, combining=True, combine_target=combine_target)
+
+                if result:
+                    player_results.update(result)
+                    player_acted = True
+                else:
+                    if combining.item.combine_function:
+                        result = combining.item.use(player, game_map, combining=True, combine_target=combining)
+
+                    if result:
+                        player_results.update(result)
+                        player_acted = True
+                    else:
+                        message_log.add_message(Message('These items cannot be combined.', libtcod.yellow))
+
+            combining = None
+            game_state = previous_game_state
+
         if do_target:
             if looking:
                 look_message = get_look_message(*key_cursor, game_map, fov_map, player)
@@ -333,6 +388,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
 
         if player_acted:
             player_results.update(player.update_status_effects())
+            player.fighter.hp = min(player.fighter.hp, player.fighter.max_hp)
 
         # Process player turn results
         attack_message = player_results.get('attack_message')
@@ -344,8 +400,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         recompute_fov = recompute_fov or player_results.get('recompute_fov')
         dead_entities = player_results.get('dead')
         item_obtained = player_results.get('item_obtained')
-        item_consumed = player_results.get('item_consumed')
         item_moved = player_results.get('item_moved')
+        item_consumed = player_results.get('item_consumed') or item_moved
 
         for message in new_messages:
             if message:
@@ -363,17 +419,18 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if item_obtained:
             game_map.entities.remove(item_obtained)
 
-        if item_consumed:
+        if item_consumed or item_moved:
             player.container.items.remove(item_consumed)
 
-        if item_moved:
-            # Code partially copied from drop
-            player.container.items.remove(item_moved)
-            item_moved.x = player_results.get('item_x')
-            item_moved.y = player_results.get('item_y')
+            if player.slots.is_equipped(item_consumed):
+                player.slots.toggle_equip(item_consumed)
 
-            if item_moved not in game_map.entities:
-                game_map.entities.append(item_moved)
+            if item_moved:
+                item_moved.x = player_results.get('item_x')
+                item_moved.y = player_results.get('item_y')
+
+                if item_moved not in game_map.entities:
+                    game_map.entities.append(item_moved)
 
         if player_acted:
             game_state = GameStates.ENEMY_TURN

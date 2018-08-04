@@ -1,6 +1,7 @@
 from random import randint
 
 import libtcodpy as libtcod
+from components.slots import SlotTypes
 from game_messages import Message
 from status_effect import StatusEffect
 
@@ -71,6 +72,34 @@ def heal(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
     throwing = kwargs.get('throwing')
+    combining = kwargs.get('combining')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+
+        if combine_target.equipment:
+            results = {}
+            if combine_target.equipment.slot is SlotTypes.WEAPON:
+                weapon_amount = kwargs.get('weapon_amount')
+                if combine_target.equipment.enchantments.get('damage_bonus'):
+                    combine_target.equipment.enchantments['damage_bonus'] += weapon_amount
+                else:
+                    combine_target.equipment.enchantments['damage_bonus'] = weapon_amount
+                results.update({'use_message': Message('{0} loses {1} damage.'.format(
+                    combine_target.definite_name.capitalize(), abs(weapon_amount)), libtcod.red)})
+            elif combine_target.equipment.slot is SlotTypes.ARMOR:
+                armor_amount = kwargs.get('armor_amount')
+                if combine_target.equipment.enchantments.get('max_hp_bonus'):
+                    combine_target.equipment.enchantments['max_hp_bonus'] += armor_amount
+                else:
+                    combine_target.equipment.enchantments['max_hp_bonus'] = armor_amount
+                results.update({'use_message': Message('{0} gains {1} max HP.'.format(
+                    combine_target.definite_name.capitalize(), armor_amount), libtcod.green)})
+
+            results.update({'item_consumed': item})
+            return results
+        else:
+            return {}
 
     if not throwing:
         target = args[0]
@@ -114,7 +143,34 @@ def heal(*args, **kwargs):
 def pain(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
+    combining = kwargs.get('combining')
     throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        if combine_target.equipment:
+            results = {}
+            if combine_target.equipment.slot is SlotTypes.WEAPON:
+                weapon_amount = kwargs.get('weapon_amount')
+                if combine_target.equipment.enchantments.get('damage_bonus'):
+                    combine_target.equipment.enchantments['damage_bonus'] += weapon_amount
+                else:
+                    combine_target.equipment.enchantments['damage_bonus'] = weapon_amount
+                results.update({'use_message': Message('{0} gains {1} damage.'.format(
+                    combine_target.definite_name.capitalize(), weapon_amount), libtcod.green)})
+            elif combine_target.equipment.slot is SlotTypes.ARMOR:
+                armor_amount = kwargs.get('armor_amount')
+                if combine_target.equipment.enchantments.get('max_hp_bonus'):
+                    combine_target.equipment.enchantments['max_hp_bonus'] += armor_amount
+                else:
+                    combine_target.equipment.enchantments['max_hp_bonus'] = armor_amount
+                results.update({'use_message': Message('{0} loses {1} max HP.'.format(
+                    combine_target.definite_name.capitalize(), abs(armor_amount)), libtcod.red)})
+
+            results.update({'item_consumed': item})
+            return results
+        else:
+            return {}
 
     if not throwing:
         target = args[0]
@@ -148,7 +204,21 @@ def might(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
     duration = kwargs.get('duration')
+    combining = kwargs.get('combining')
     throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        if combine_target.equipment and combine_target.equipment.slot is SlotTypes.WEAPON:
+            weapon_amount = kwargs.get('weapon_amount')
+            if combine_target.equipment.enchantments.get('attack_bonus'):
+                combine_target.equipment.enchantments['attack_bonus'] += weapon_amount
+            else:
+                combine_target.equipment.enchantments['attack_bonus'] = weapon_amount
+            return {'use_message': Message('{0} gain {1} attack.'.format(
+                combine_target.definite_name.capitalize(), weapon_amount), libtcod.green), 'item_consumed': item}
+        else:
+            return {}
 
     if not throwing:
         target = args[0]
@@ -190,7 +260,21 @@ def protection(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
     duration = kwargs.get('duration')
+    combining = kwargs.get('combining')
     throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        if combine_target.equipment and combine_target.equipment.slot is SlotTypes.ARMOR:
+            armor_amount = kwargs.get('armor_amount')
+            if combine_target.equipment.enchantments.get('defense_bonus'):
+                combine_target.equipment.enchantments['defense_bonus'] += armor_amount
+            else:
+                combine_target.equipment.enchantments['defense_bonus'] = armor_amount
+            return {'use_message': Message('{0} gain {1} defense.'.format(
+                combine_target.definite_name.capitalize(), armor_amount), libtcod.green), 'item_consumed': item}
+        else:
+            return {}
 
     if not throwing:
         target = args[0]
@@ -231,7 +315,13 @@ def protection(*args, **kwargs):
 def teleportation(*args, **kwargs):
     item = args[1]
     game_map = args[2]
+    combining = kwargs.get('combining')
     throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        x, y = game_map.find_open_tile()
+        return {'item_consumed': item, 'move_item': combine_target, 'target_x': x, 'target_y': y}
 
     if not throwing:
         target = args[0]
@@ -240,7 +330,8 @@ def teleportation(*args, **kwargs):
         if not target:
             target_x = kwargs.get('target_x')
             target_y = kwargs.get('target_y')
-            return {'item_moved': item, 'item_x': target_x, 'item_y': target_y}
+            return {'use_message': Message('{0} suddenly vanishes.'.format(item.definite_name.capitalize()),
+                                           libtcod.magenta), 'item_moved': item, 'item_x': target_x, 'item_y': target_y}
 
     player_using = target == args[0]
 
@@ -259,25 +350,21 @@ def teleportation(*args, **kwargs):
 
 
 class Item:
-    def __init__(self, use_function=None, throw_function=throw_std, **kwargs):
+    def __init__(self, use_function=None, combine_function=None, throw_function=throw_std, **kwargs):
         self.use_function = use_function
+        self.combine_function = combine_function
         self.throw_function = throw_function
         self.function_kwargs = kwargs
 
     def use(self, user, game_map, **kwargs):
-        results = {}
+        kwargs.update(self.function_kwargs)
 
-        if kwargs.get('throwing'):
-            kwargs.update(self.function_kwargs)
-            throw_results = self.throw_function(user, self.owner, game_map, **kwargs)
-            results.update(throw_results)
-        elif self.use_function is None:
-            results['use_message'] = Message('{0} cannot be used'.format(self.owner.definite_name.capitalize()),
-                                             libtcod.yellow)
-            return results
-        else:
-            kwargs.update(self.function_kwargs)
-            item_use_results = self.use_function(user, self.owner, game_map, **kwargs)
-            results.update(item_use_results)
+        if kwargs.get('combining') and self.combine_function:
+            return self.combine_function(user, self.owner, game_map, **kwargs)
+        elif kwargs.get('throwing') and self.throw_function:
+            return self.throw_function(user, self.owner, game_map, **kwargs)
+        elif self.use_function:
+            return self.use_function(user, self.owner, game_map, **kwargs)
 
-        return results
+        return {'use_message': Message('{0} cannot be used'.format(self.owner.definite_name.capitalize()),
+                                         libtcod.yellow)}
