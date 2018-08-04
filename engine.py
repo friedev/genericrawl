@@ -10,7 +10,7 @@ from game_states import GameStates
 from input import InputSchemes, handle_mouse
 from map.game_map import GameMap
 from map.tile import Tiles
-from render import render_all, clear_all, RenderOrder, name_entities
+from render import render_all, clear_all, RenderOrder
 
 
 def get_mouse_tile(console_width, console_height, player_x, player_y, mouse_x, mouse_y):
@@ -51,7 +51,7 @@ def get_look_message(x, y, game_map, fov_map, player):
             entity_list.remove(player)
 
         if len(entity_list) > 0:
-            entity_names = name_entities(entity_list)
+            entity_names = join_list([entity.indefinite_name for entity in entity_list])
             return Message('You see ' + entity_names + '.', libtcod.light_gray)
 
     return None
@@ -201,7 +201,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
 
                             # player.fighter.base_max_hp += 10
-                            player.fighter.hp += player.fighter.max_hp
+                            player.fighter.hp = player.fighter.max_hp
                             player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
                             game_map.entities.append(player)
 
@@ -331,11 +331,15 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                 throwing = None
                 player_acted = True
 
+        if player_acted:
+            player_results.update(player.update_status_effects())
+
         # Process player turn results
         attack_message = player_results.get('attack_message')
         pickup_message = player_results.get('pickup_message')
         use_message = player_results.get('use_message')
-        new_messages = [attack_message, pickup_message, use_message]
+        effect_message = player_results.get('effect_message')
+        new_messages = [attack_message, pickup_message, use_message, effect_message]
 
         recompute_fov = recompute_fov or player_results.get('recompute_fov')
         dead_entities = player_results.get('dead')

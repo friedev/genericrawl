@@ -29,37 +29,52 @@ class Fighter:
 
     @property
     def max_hp(self):
-        if self.owner and self.owner.slots:
-            bonus = self.owner.slots.max_hp_bonus
-        else:
-            bonus = 0
+        bonus = 0
+
+        if self.owner.slots:
+            bonus += self.owner.slots.max_hp_bonus
 
         return self.base_max_hp + bonus
 
     @property
     def attack(self):
-        if self.owner and self.owner.slots:
-            bonus = self.owner.slots.attack_bonus
-        else:
-            bonus = 0
+        bonus = 0
+
+        if self.owner.slots:
+            bonus += self.owner.slots.attack_bonus
+
+        for effect in self.owner.status_effects:
+            attack_bonus = effect.properties.get('attack_bonus')
+            if attack_bonus:
+                bonus += attack_bonus
 
         return self.base_attack + bonus
 
     @property
     def defense(self):
-        if self.owner and self.owner.slots:
-            bonus = self.owner.slots.defense_bonus
-        else:
-            bonus = 0
+        bonus = 0
+
+        if self.owner.slots:
+            bonus += self.owner.slots.defense_bonus
+
+        for effect in self.owner.status_effects:
+            defense_bonus = effect.properties.get('defense_bonus')
+            if defense_bonus:
+                bonus += defense_bonus
 
         return self.base_defense + bonus
 
     @property
     def damage(self):
-        if self.owner and self.owner.slots:
-            bonus = self.owner.slots.damage_bonus
-        else:
-            bonus = 0
+        bonus = 0
+
+        if self.owner.slots:
+            bonus += self.owner.slots.damage_bonus
+
+        for effect in self.owner.status_effects:
+            damage_bonus = effect.properties.get('damage_bonus')
+            if damage_bonus:
+                bonus += damage_bonus
 
         return self.base_damage + bonus
 

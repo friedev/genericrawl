@@ -1,8 +1,8 @@
 from random import randint
 
 import libtcodpy as libtcod
-from entity import Entity
 from game_messages import Message
+from status_effect import StatusEffect
 
 
 def get_throw_target(game_map, **kwargs):
@@ -28,7 +28,7 @@ def equip(*args, **kwargs):
 
     if equipped and unequipped:
         results['use_message'] = Message('You swap out {0} for {1}.'.format(unequipped.definite_name,
-                                                                        equipped.definite_name), libtcod.light_blue)
+                                                                            equipped.definite_name), libtcod.light_blue)
     elif equipped:
         results['use_message'] = Message('You equip {0}.'.format(equipped.definite_name), libtcod.light_blue)
     elif unequipped:
@@ -147,6 +147,7 @@ def pain(*args, **kwargs):
 def might(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
+    duration = kwargs.get('duration')
     throwing = kwargs.get('throwing')
 
     if not throwing:
@@ -165,7 +166,14 @@ def might(*args, **kwargs):
     else:
         actual_amount = amount
 
-    target.fighter.base_attack += actual_amount
+    total_amount = actual_amount
+    existing_effect = target.get_status_effect('strengthened')
+    if existing_effect:
+        total_amount += existing_effect.properties.get('attack_bonus')
+        duration += target.status_effects.get(existing_effect)
+        target.status_effects.pop(existing_effect)
+
+    target.status_effects.update({StatusEffect('strengthened', {'attack_bonus': total_amount}, None): duration})
 
     results = {'item_consumed': item}
     if player_using:
@@ -181,6 +189,7 @@ def might(*args, **kwargs):
 def protection(*args, **kwargs):
     item = args[1]
     amount = kwargs.get('amount')
+    duration = kwargs.get('duration')
     throwing = kwargs.get('throwing')
 
     if not throwing:
@@ -199,7 +208,14 @@ def protection(*args, **kwargs):
     else:
         actual_amount = amount
 
-    target.fighter.base_defense += actual_amount
+    total_amount = actual_amount
+    existing_effect = target.get_status_effect('protected')
+    if existing_effect:
+        total_amount += existing_effect.properties.get('defense_bonus')
+        duration += target.status_effects.get(existing_effect)
+        target.status_effects.pop(existing_effect)
+
+    target.status_effects.update({StatusEffect('protected', {'defense_bonus': total_amount}, None): duration})
 
     results = {'item_consumed': item}
     if player_using:

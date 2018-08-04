@@ -4,7 +4,7 @@ from math import atan2
 
 import libtcodpy as libtcod
 from fov import distance
-from game_messages import Message
+from game_messages import Message, join_list
 from render import RenderOrder
 
 
@@ -24,7 +24,7 @@ class Entity:
     """
 
     def __init__(self, x, y, char, color, name, is_name_proper=False, blocks=True, render_order=RenderOrder.CORPSE,
-                 components={}):
+                 components={}, status_effects={}):
         self.x = x
         self.y = y
         self.char = char
@@ -34,6 +34,7 @@ class Entity:
         self.blocks = blocks
         self.render_order = render_order
         self.components = components
+        self.status_effects = status_effects
 
         self.update_components_owner()
 
@@ -84,6 +85,34 @@ class Entity:
 
     def distance_to(self, other):
         return distance(self.x, self.y, other.x, other.y)
+
+    def update_status_effects(self):
+        results = {}
+        expired = []
+        for effect in self.status_effects.keys():
+            duration = self.status_effects.get(effect)
+            if duration > 0:
+                self.status_effects[effect] -= 1
+                results.update(effect.apply(self))
+            else:
+                expired.append(effect)
+                results.update(effect.stop(self))
+
+        for effect in expired:
+            self.status_effects.pop(effect)
+            if effect.hidden:
+                expired.remove(effect)
+
+        if expired:
+            return {'effect_message': Message('You are no longer {0}.'.format(
+                join_list([effect.name for effect in expired])), libtcod.yellow)}
+
+        return {}
+
+    def get_status_effect(self, name):
+        for effect in self.status_effects.keys():
+            if effect.name == name:
+                return effect
 
     def kill(self, is_player=False):
         self.char = '%'

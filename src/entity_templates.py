@@ -59,8 +59,8 @@ class EntityTemplates(Enum):
     ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)
     RUNE_HEALING = create_rune(libtcod.darker_green, 'rune of healing', heal, amount=1/3)
     RUNE_PAIN = create_rune(libtcod.red, 'rune of pain', pain, amount=0.5)
-    RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=1)
-    RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=1)
+    RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=1, duration=10)
+    RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=1, duration=10)
     RUNE_TELEPORTATION = create_rune(libtcod.magenta, 'rune of teleportation', teleportation)
 
 

@@ -1,8 +1,7 @@
 from enum import Enum, auto
 
-import libtcodpy as libtcod
 from fov import distance
-from game_messages import Message
+from game_messages import join_list
 from game_states import GameStates
 from libtcodpy import Color
 from menu import *
@@ -13,18 +12,6 @@ class RenderOrder(Enum):
     ENEMY = auto()
     ITEM = auto()
     CORPSE = auto()
-
-
-def name_entities(entity_list):
-    names = [entity.indefinite_name for entity in entity_list]
-    name_len = len(names)
-    names = ', '.join(names)
-    names = names.rsplit(',', 1)
-    if name_len > 2:
-        names = ', and'.join(names)
-    else:
-        names = ' and'.join(names)
-    return names
 
 
 def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
@@ -121,7 +108,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     if libtcod.map_is_in_fov(fov_map, cursor_x, cursor_y):
         entities_at_cursor = game_map.get_entities_at_tile(cursor_x, cursor_y)
         if entities_at_cursor:
-            names = name_entities(entities_at_cursor)
+            names = join_list([entity.indefinite_name for entity in entities_at_cursor])
             if len(names) > screen_width - 2:
                 names = str(len(entities_at_cursor)) + ' entities (right-click to list all)'
 
