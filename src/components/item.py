@@ -57,7 +57,7 @@ def throw_std(*args, **kwargs):
     if not amount:
         amount = randint(1, 4)
 
-    results = {**results, **target.fighter.take_damage(amount)}
+    results.update(target.fighter.take_damage(amount))
     if amount > 0:
         results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name.capitalize(),
                                                                            target.definite_name, amount))
@@ -252,16 +252,16 @@ class Item:
         results = {}
 
         if kwargs.get('throwing'):
-            kwargs = {**self.function_kwargs, **kwargs}
+            kwargs.update(self.function_kwargs)
             throw_results = self.throw_function(user, self.owner, game_map, **kwargs)
-            results = {**results, **throw_results}
+            results.update(throw_results)
         elif self.use_function is None:
             results['use_message'] = Message('{0} cannot be used'.format(self.owner.definite_name.capitalize()),
                                              libtcod.yellow)
             return results
         else:
-            kwargs = {**self.function_kwargs, **kwargs}
+            kwargs.update(self.function_kwargs)
             item_use_results = self.use_function(user, self.owner, game_map, **kwargs)
-            results = {**results, **item_use_results}
+            results.update(item_use_results)
 
         return results

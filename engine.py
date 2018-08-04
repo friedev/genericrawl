@@ -194,7 +194,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                         if blocking_entities:
                             target = blocking_entities[0]
                             attack_results = player.fighter.attack_entity(target.fighter)
-                            player_results = {**player_results, **attack_results}
+                            player_results.update(attack_results)
                             player_acted = True
                             moved = True
                         elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
@@ -248,7 +248,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
             for entity in entities_at_tile:
                 if entity.item:
-                    player_results = {**player_results, **player.container.add_item(entity)}
+                    player_results.update(player.container.add_item(entity))
                     player_acted = True
                     break
             else:
@@ -267,7 +267,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
         if use and game_state is GameStates.INVENTORY:
             if menu_selection < len(player.container.items):
                 use_results = player.container.items[menu_selection].item.use(player, game_map)
-                player_results = {**player_results, **use_results}
+                player_results.update(use_results)
                 player_acted = True
 
         if throw and game_state is GameStates.INVENTORY:
@@ -326,7 +326,7 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                     player.slots.toggle_equip(throwing)
                 throw_results = throwing.item.use(player, game_map, throwing=True, target_x=key_cursor[0],
                                                   target_y=key_cursor[1])
-                player_results = {**player_results, **throw_results}
+                player_results.update(throw_results)
                 game_state = previous_game_state
                 throwing = None
                 player_acted = True
