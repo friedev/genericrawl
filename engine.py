@@ -8,7 +8,7 @@ from fov import *
 from game_messages import MessageLog, Message, join_list
 from game_states import GameStates
 from input import InputSchemes, handle_mouse
-from map.game_map import GameMap
+from map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
 from map.tile import Tiles
 from render import render_all, clear_all, RenderOrder
 
@@ -76,10 +76,6 @@ def main():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    # Map dimensions, in tiles
-    map_width = 65
-    map_height = 65
-
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
     console = libtcod.console_new(screen_width, screen_height)
@@ -91,18 +87,23 @@ def main():
 
     restart = True
     while restart:
-        restart = play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme)
+        restart = play_game(console, panel, bar_width, message_log, input_scheme, color_scheme)
 
 
-def play_game(console, panel, bar_width, message_log, map_width, map_height, input_scheme, color_scheme):
-    game_map = GameMap(map_width, map_height, 1)
-    player_sight = Sight()
-    player_fighter = Fighter(hp=10, defense=1, attack=1, damage=2)
-    player_slots = Slots()
-    player_container = Container(26)
-    player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
-                    render_order=RenderOrder.PLAYER, components={'sight': player_sight, 'fighter': player_fighter,
-                                                                 'slots': player_slots, 'container': player_container})
+def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme, viewing_map=False):
+    game_map = GameMap(1)
+    if viewing_map:
+        player = Entity(int(game_map.width / 2), int(game_map.height/ 2), ' ', libtcod.white, 'player')
+    else:
+        player_sight = Sight()
+        player_fighter = Fighter(hp=10, defense=1, attack=1, damage=2)
+        player_slots = Slots()
+        player_container = Container(26)
+        player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
+                        render_order=RenderOrder.PLAYER,
+                        components={'sight': player_sight, 'fighter': player_fighter, 'slots': player_slots,
+                                    'container': player_container})
+
     game_map.entities.append(player)
 
     recompute_fov = True
@@ -126,7 +127,8 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             player.sight.get_fov(fov_map, memory)
 
         render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme.value,
-                   game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None)
+                   game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None,
+                   viewing_map)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
         clear_all(console, game_map.entities, player)
@@ -206,20 +208,24 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
                             player_results.update(attack_results)
                             player_acted = True
                             # moved = True
-                        elif game_map.get_tile(player.x + dx, player.y + dy, value=False) is Tiles.STAIRS:
-                            game_map = GameMap(map_width, map_height, game_map.dungeon_level + 1)
+                        elif game_map.get_tile(player.x + dx, player.y + dy, value=True) is STAIRS:
+                            dungeon_level = game_map.dungeon_level + 1
+                            if not LEVEL_CONFIGURATIONS.get(dungeon_level):
+                                game_state = GameStates.VICTORY
+                            else:
+                                game_map = GameMap(game_map.dungeon_level + 1)
 
-                            # player.fighter.base_max_hp += 10
-                            player.fighter.hp = player.fighter.max_hp
-                            player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
-                            game_map.entities.append(player)
+                                # player.fighter.base_max_hp += 10
+                                player.fighter.hp = player.fighter.max_hp
+                                player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
+                                game_map.entities.append(player)
 
-                            recompute_fov = True
-                            fov_map = game_map.generate_fov_map()
-                            memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
-                            player_acted = False
+                                recompute_fov = True
+                                fov_map = game_map.generate_fov_map()
+                                memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
+                                player_acted = False
 
-                            libtcod.console_clear(console)
+                                libtcod.console_clear(console)
 
                 # In the event that the player moves into a wall, do not adjust facing
                 # if face and (not move or moved):
@@ -311,7 +317,12 @@ def play_game(console, panel, bar_width, message_log, map_width, map_height, inp
             message_log.add_message(Message('Select a tile to look at. Escape to cancel.', libtcod.light_gray))
 
         if wait and game_state is GameStates.PLAYER_TURN:
-            player_acted = True
+            if viewing_map:
+                game_map = GameMap(game_map.dungeon_level + 1)
+                player.x = int(game_map.width / 2)
+                player.y = int(game_map.height / 2)
+            else:
+                player_acted = True
 
         if restart and game_state is GameStates.PLAYER_DEAD:
             return True

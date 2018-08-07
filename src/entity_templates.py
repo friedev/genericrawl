@@ -70,7 +70,7 @@ class EntityTemplates(Enum):
 
 def weight_range(value, start, end):
     weights = []
-    for i in range(0, end + 2):
+    for i in range(end + 2):
         if i in range(start, end):
             weights.append(value)
         else:

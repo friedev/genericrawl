@@ -30,7 +30,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
 
 
 def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
-               game_state, mouse, menu_selection=0, key_cursor=None):
+               game_state, mouse, menu_selection=0, key_cursor=None, viewing_map=False):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -50,17 +50,23 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     top_left_x = camera_x - center_x
     top_left_y = camera_y - center_y
 
+    if game_state is GameStates.VICTORY:
+        libtcod.console_clear(console)
+        libtcod.console_print_ex(console, center_x, center_y, libtcod.BKGND_DEFAULT, libtcod.CENTER, 'You Win!')
+        libtcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
+        return
+
     # Draw all visible and remembered tiles
     for x in range(screen_width):
         for y in range(screen_height):
             tile_x = x + top_left_x
             tile_y = y + top_left_y
-            if game_map.contains(tile_x, tile_y) and memory[tile_x][tile_y]:
+            if game_map.contains(tile_x, tile_y) and (viewing_map or memory[tile_x][tile_y]):
                 tile = game_map.get_tile(tile_x, tile_y, value=False)
                 foreground = color_scheme.foreground.get(tile)
                 background = color_scheme.background.get(tile)
 
-                if libtcod.map_is_in_fov(fov_map, tile_x, tile_y):
+                if viewing_map or libtcod.map_is_in_fov(fov_map, tile_x, tile_y):
                     if color_scheme.allow_fade:
                         foreground = apply_fov_gradient(foreground, distance(player.x, player.y, tile_x, tile_y),
                                                         player.sight.fov_radius)
@@ -83,7 +89,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
 
     # Draw all visible entities
     for entity in ordered_entities:
-        if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+        if viewing_map or libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
             libtcod.console_set_default_foreground(console, entity.color)
             libtcod.console_put_char(console, entity.x - top_left_x, entity.y - top_left_y, entity.char,
                                      libtcod.BKGND_NONE)
@@ -93,6 +99,9 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
         libtcod.console_put_char(console, center_x, center_y, 'X', libtcod.BKGND_NONE)
 
     libtcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
+
+    if viewing_map:
+        return
 
     # Panel dimensions
     panel_width = libtcod.console_get_width(panel)
@@ -153,6 +162,7 @@ def clear_all(console, entities, player):
 
 # Used to brighten tiles near the player and darken ones further away
 def apply_fov_gradient(tile_color, tile_distance, fov_radius, brightness_range=32, max_brightness=16):
+    return tile_color
     color_mod = int(brightness_range * (tile_distance / fov_radius)) - max_brightness
 
     # If the color modifier is above zero, the tile is darkened, otherwise it is lightened

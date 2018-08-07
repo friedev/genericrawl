@@ -17,11 +17,11 @@ from random import randint, choice, randrange
 
 #tile constants (edited to include more wall variants)
 EMPTY = 0
-FLOOR = 1
+ROOM_FLOOR = 1
 DOOR = 2
-CORRIDOR = 3
+CORRIDOR_FLOOR = 3
 DEADEND = 4
-CAVE = 5
+CAVE_FLOOR = 5
 ROOM_WALL = 6
 CORRIDOR_WALL = 7
 CAVE_WALL = 8
@@ -30,10 +30,10 @@ STAIRS = 9
 
 # Edited; maps floors to their corresponding wall types
 floor_to_wall = {
-    FLOOR: ROOM_WALL,
-    CORRIDOR: CORRIDOR_WALL,
+    ROOM_FLOOR: ROOM_WALL,
+    CORRIDOR_FLOOR: CORRIDOR_WALL,
     DEADEND: CORRIDOR_WALL,
-    CAVE: CAVE_WALL
+    CAVE_FLOOR: CAVE_WALL
 }
 
 
@@ -355,7 +355,7 @@ class dungeonGenerator:
         if self.quadFits(startX, startY, roomWidth, roomHeight, 0) or ignoreOverlap:
             for x in range(roomWidth):
                 for y in range(roomHeight):
-                    self.grid[startX+x][startY+y] = FLOOR
+                    self.grid[startX+x][startY+y] = ROOM_FLOOR
             self.rooms.append(dungeonRoom(startX, startY, roomWidth, roomHeight))
             return True
 
@@ -384,7 +384,7 @@ class dungeonGenerator:
             if self.quadFits(startX, startY, roomWidth, roomHeight, margin):
                 for x in range(roomWidth):
                     for y in range(roomHeight):
-                        self.grid[startX+x][startY+y] = FLOOR
+                        self.grid[startX+x][startY+y] = ROOM_FLOOR
                 self.rooms.append(dungeonRoom(startX, startY, roomWidth, roomHeight))
 
     def generateCaves(self, p = 45, smoothing = 4):
@@ -402,7 +402,7 @@ class dungeonGenerator:
         for x in range(self.width):
             for y in range(self.height):
                 if randint(0, 100) < p:
-                    self.grid[x][y] = CAVE
+                    self.grid[x][y] = CAVE_FLOOR
         for i in range(smoothing):
             for x in range(self.width):
                 for y in range(self.height):
@@ -410,10 +410,10 @@ class dungeonGenerator:
                         self.grid[x][y] = EMPTY
                     touchingEmptySpace = 0
                     for nx, ny in self.findNeighbours(x,y):
-                        if self.grid[nx][ny] == CAVE:
+                        if self.grid[nx][ny] == CAVE_FLOOR:
                             touchingEmptySpace += 1
                     if touchingEmptySpace >= 5:
-                        self.grid[x][y] = CAVE
+                        self.grid[x][y] = CAVE_FLOOR
                     elif touchingEmptySpace <= 2:
                        self.grid[x][y] = EMPTY
 
@@ -444,7 +444,7 @@ class dungeonGenerator:
             while not self.canCarve(x, y, 0, 0):
                 x = randint(1, self.width-2)
                 y = randint(1, self.height-2)
-        self.grid[x][y] = CORRIDOR
+        self.grid[x][y] = CORRIDOR_FLOOR
         self.corridors.append((x,y))
         cells.append((x,y))
         while cells:
@@ -459,7 +459,7 @@ class dungeonGenerator:
             possMoves = self.getPossibleMoves(x, y)
             if possMoves:
                 xi, yi = choice(possMoves)
-                self.grid[xi][yi] = CORRIDOR
+                self.grid[xi][yi] = CORRIDOR_FLOOR
                 self.corridors.append((xi,yi))
                 cells.append((xi, yi))
             else:
@@ -583,10 +583,10 @@ class dungeonGenerator:
             x, y = c[0]
             for x in range(c[0][0]+1, c[1][0]):
                 if self.grid[x][y] == EMPTY:
-                    self.grid[x][y] = CORRIDOR
+                    self.grid[x][y] = CORRIDOR_FLOOR
             for y in range(c[0][1]+1, c[1][1]):
                 if self.grid[x][y] == EMPTY:
-                    self.grid[x][y] = CORRIDOR
+                    self.grid[x][y] = CORRIDOR_FLOOR
             self.corridors.append((x,y))
 
 

@@ -82,12 +82,12 @@ class Fighter:
         attack_hit = calc_hit_chance(self.attack, target.defense)
 
         if not attack_hit:
-            return {'attack_message': Message('{0} misses {1}.'.format(self.owner.definite_name.capitalize(),
-                                                                       target.owner.definite_name), libtcod.light_gray)}
+            return {'attack_message': Message("{0} blocks {1}'s attack.".format(target.owner.definite_name.capitalize(),
+                    self.owner.definite_name), libtcod.light_gray)}
 
         if self.damage <= 0:
             return {'attack_message': Message('{0} attacks {1} but does no damage.'.format(
-                self.owner.definite_name.capitalize(), target.owner.definite_name))}
+                self.owner.definite_name.capitalize(), target.owner.definite_name), libtcod.light_gray)}
 
         results = target.take_damage(self.damage)
 
