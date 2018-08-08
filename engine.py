@@ -61,8 +61,8 @@ def main():
     init_color_schemes()
 
     # Screen dimensions, in characters
-    screen_width = 80
-    screen_height = 50
+    screen_width = 128
+    screen_height = 72
 
     # Panel dimensions, in characters
     panel_width = screen_width
@@ -92,17 +92,19 @@ def main():
 
 def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme, viewing_map=False):
     game_map = GameMap(1)
+    start_tile = LEVEL_CONFIGURATIONS.get(1).get('start_tile')
     if viewing_map:
-        player = Entity(int(game_map.width / 2), int(game_map.height/ 2), ' ', libtcod.white, 'player')
+        player_tile = (int(game_map.width / 2), int(game_map.height / 2))
     else:
-        player_sight = Sight()
-        player_fighter = Fighter(hp=10, defense=1, attack=1, damage=2)
-        player_slots = Slots()
-        player_container = Container(26)
-        player = Entity(*game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR), '@', libtcod.white, 'player',
-                        render_order=RenderOrder.PLAYER,
-                        components={'sight': player_sight, 'fighter': player_fighter, 'slots': player_slots,
-                                    'container': player_container})
+        player_tile = game_map.find_open_tile(tile_type=start_tile)
+    player_char = '@' if not viewing_map else ' '
+    player_sight = Sight()
+    player_fighter = Fighter(hp=20, defense=1, attack=1, damage=2)
+    player_slots = Slots()
+    player_container = Container(26)
+    player = Entity(*player_tile, player_char, libtcod.white, 'player', render_order=RenderOrder.PLAYER,
+                    components={'sight': player_sight, 'fighter': player_fighter, 'slots': player_slots,
+                                'container': player_container})
 
     game_map.entities.append(player)
 
@@ -115,6 +117,8 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
 
     game_state = GameStates.PLAYER_TURN
     previous_game_state = game_state
+
+    previous_max_hp = player.fighter.max_hp
 
     key_cursor = (0, 0)
     menu_selection = 0
@@ -208,16 +212,21 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
                             player_results.update(attack_results)
                             player_acted = True
                             # moved = True
-                        elif game_map.get_tile(player.x + dx, player.y + dy, value=True) is STAIRS:
+                        elif game_map.get_tile(player.x + dx, player.y + dy, raw=True) is STAIRS:
                             dungeon_level = game_map.dungeon_level + 1
-                            if not LEVEL_CONFIGURATIONS.get(dungeon_level):
+                            configuration = LEVEL_CONFIGURATIONS.get(dungeon_level)
+                            if not configuration:
                                 game_state = GameStates.VICTORY
                             else:
                                 game_map = GameMap(game_map.dungeon_level + 1)
 
                                 # player.fighter.base_max_hp += 10
                                 player.fighter.hp = player.fighter.max_hp
-                                player.x, player.y = game_map.find_open_tile(tile_type=Tiles.ROOM_FLOOR)
+                                start_tile = configuration.get('start_tile')
+                                if start_tile:
+                                    player.x, player.y = game_map.find_open_tile(tile_type=start_tile)
+                                else:
+                                    player.x, player.y = game_map.find_open_tile()
                                 game_map.entities.append(player)
 
                                 recompute_fov = True
@@ -334,6 +343,7 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
             elif game_state is GameStates.TARGETING:
                 game_state = previous_game_state
                 throwing = None
+                looking = False
             else:
                 return False
 
@@ -399,7 +409,9 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
 
         if player_acted:
             player_results.update(player.update_status_effects())
-            player.fighter.hp = min(player.fighter.hp, player.fighter.max_hp)
+            if player.fighter.max_hp < previous_max_hp:
+                player.fighter.hp = max(1, player.fighter.hp - (previous_max_hp - player.fighter.max_hp))
+            previous_max_hp = player.fighter.max_hp
 
         # Process player turn results
         attack_message = player_results.get('attack_message')

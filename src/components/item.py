@@ -1,6 +1,7 @@
 from random import randint
 
 import libtcodpy as libtcod
+from components.fighter import calc_hit_chance
 from components.slots import SlotTypes
 from game_messages import Message
 from status_effect import StatusEffect
@@ -46,25 +47,26 @@ def throw_std(*args, **kwargs):
     target_y = kwargs.get('target_y')
     target = get_throw_target(args[2], **kwargs)
 
-    results = {'item_moved': item, 'item_x': target_x, 'item_y': target_y}
+    results = {}
 
     if not target:
-        return results
+        return {'item_moved': item, 'item_x': target_x, 'item_y': target_y}
 
     amount = kwargs.get('amount')
     if not amount and item.equipment:
-        amount = item.equipment.attack_bonus
-
-    if not amount:
-        amount = randint(1, 4)
+        amount = max(1, int(item.equipment.damage_bonus / 2))
+    else:
+        amount = 1
 
     results.update(target.fighter.take_damage(amount))
+    results.update({'item_consumed': item})
+
     if amount > 0:
-        results['use_message'] = Message('{0} hits {1} for {2} HP.'.format(item.definite_name.capitalize(),
-                                                                           target.definite_name, amount))
+        results['use_message'] = Message('{0} hits {1} for {2} HP, breaking in the process.'.format(
+            item.definite_name.capitalize(), target.definite_name, amount))
     else:
-        results['use_message'] = Message('{0} bounces off {1} harmlessly.'.format(item.definite_name.capitalize(),
-                                                                                  target.definite_name))
+        results['use_message'] = Message('{0} shatters harmlessly against {1}.'.format(
+            item.definite_name.capitalize(), target.definite_name))
     return results
 
 
@@ -215,7 +217,7 @@ def might(*args, **kwargs):
                 combine_target.equipment.enchantments['attack_bonus'] += weapon_amount
             else:
                 combine_target.equipment.enchantments['attack_bonus'] = weapon_amount
-            return {'use_message': Message('{0} gain {1} attack.'.format(
+            return {'use_message': Message('{0} gains {1} attack.'.format(
                 combine_target.definite_name.capitalize(), weapon_amount), libtcod.green), 'item_consumed': item}
         else:
             return {}
@@ -271,7 +273,7 @@ def protection(*args, **kwargs):
                 combine_target.equipment.enchantments['defense_bonus'] += armor_amount
             else:
                 combine_target.equipment.enchantments['defense_bonus'] = armor_amount
-            return {'use_message': Message('{0} gain {1} defense.'.format(
+            return {'use_message': Message('{0} gains {1} defense.'.format(
                 combine_target.definite_name.capitalize(), armor_amount), libtcod.green), 'item_consumed': item}
         else:
             return {}

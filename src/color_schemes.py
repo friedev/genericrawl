@@ -43,8 +43,8 @@ def set_tile_color(color_dict, tile, color):
 
 
 DEFAULT_COLORS = generate_tile_dict(libtcod.light_blue, libtcod.dark_blue, libtcod.gray, libtcod.darker_gray,
-                                    libtcod.darker_orange, libtcod.darkest_orange, libtcod.dark_cyan,
-                                    libtcod.light_blue, libtcod.darker_orange)
+                                    libtcod.dark_sepia, libtcod.darker_sepia, libtcod.dark_cyan,
+                                    libtcod.light_blue, libtcod.dark_sepia)
 
 
 class ColorScheme:

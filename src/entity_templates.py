@@ -17,16 +17,36 @@ def create_enemy(char, color, name, hp, defense, attack, damage, is_name_proper=
                               'ai': BasicMonster()})
 
 
-def create_weapon(name, attack, damage, char=')', color=libtcod.lighter_gray, is_name_proper=False):
+def create_sword(name, attack, damage, is_name_proper=False):
+    return create_weapon('(', libtcod.lighter_gray, name, attack, damage, is_name_proper)
+
+
+def create_polearm(name, attack, damage, is_name_proper=False):
+    return create_weapon('|', libtcod.darker_orange, name, attack, damage, is_name_proper)
+
+
+def create_heavy(name, attack, damage, is_name_proper=False):
+    return create_weapon('/', libtcod.dark_gray, name, attack, damage, is_name_proper)
+
+
+def create_weapon(char, color, name, attack, damage, is_name_proper=False):
     return Entity(0, 0, char, color, name, is_name_proper=is_name_proper, blocks=False, render_order=RenderOrder.ITEM,
                   components={'item': Item(use_function=equip),
                               'equipment': Equipment(SlotTypes.WEAPON, attack_bonus=attack, damage_bonus=damage)})
 
 
-def create_armor(name, defense, max_hp, char='[', color=libtcod.lighter_gray, is_name_proper=False):
+def create_def_armor(name, defense, hp, is_name_proper=False):
+    return create_armor('}', libtcod.lighter_gray, name, defense, hp, is_name_proper)
+
+
+def create_hp_armor(name, defense, hp, is_name_proper=False):
+    return create_armor('[', libtcod.darker_orange, name, defense, hp, is_name_proper)
+
+
+def create_armor(char, color, name, defense, hp, is_name_proper=False):
     return Entity(0, 0, char, color, name, is_name_proper=is_name_proper, blocks=False, render_order=RenderOrder.ITEM,
                   components={'item': Item(use_function=equip),
-                              'equipment': Equipment(SlotTypes.ARMOR, defense_bonus=defense, max_hp_bonus=max_hp)})
+                              'equipment': Equipment(SlotTypes.ARMOR, defense_bonus=defense, max_hp_bonus=hp)})
 
 
 def create_rune(color, name, rune_function, char='*', is_name_proper=False, combine_function=None, throw_function=None,
@@ -41,22 +61,48 @@ def create_rune(color, name, rune_function, char='*', is_name_proper=False, comb
 
 class EntityTemplates(Enum):
     # Enemies
-    GOBLIN = create_enemy('g', libtcod.darker_green, 'goblin', hp=5, defense=0, attack=1, damage=1)
-    ORC = create_enemy('o', libtcod.green, 'orc', hp=8, defense=1, attack=1, damage=2)
-    OGRE = create_enemy('O', libtcod.darker_green, 'ogre', hp=16, defense=3, attack=3, damage=4)
-    TROLL = create_enemy('T', libtcod.darker_gray, 'troll', hp=24, defense=7, attack=5, damage=8)
+    GOBLIN = create_enemy('g', libtcod.darker_green, 'goblin',      hp=6,  attack=2,  defense=1,  damage=2)
+    KOBOLD = create_enemy('k', libtcod.light_pink, 'kobold',        hp=7,  attack=1,  defense=0,  damage=1)
+    ZOMBIE = create_enemy('z', libtcod.green, 'zombie',             hp=10, attack=1,  defense=2,  damage=1)
+    ORC = create_enemy('o', libtcod.green, 'orc',                   hp=15, attack=3,  defense=3,  damage=4)
+    GNOLL = create_enemy('G', libtcod.dark_orange, 'gnoll',         hp=22, attack=4,  defense=6,  damage=5)
+    SKELETON = create_enemy('s', libtcod.white, 'skeleton',         hp=24, attack=2,  defense=5,  damage=3)
+    SPIDER = create_enemy('S', libtcod.darker_gray, 'spider',       hp=28, attack=8,  defense=5,  damage=9)
+    WEREWOLF = create_enemy('w', libtcod.darker_gray, 'werewolf',   hp=26, attack=6,  defense=5,  damage=6)
+    OGRE = create_enemy('O', libtcod.darker_green, 'ogre',          hp=50, attack=4,  defense=7,  damage=8)
+    WYVERN = create_enemy('W', libtcod.red, 'wyvern',               hp=45, attack=13, defense=7,  damage=14)
+    CYCLOPS = create_enemy('C', libtcod.dark_orange, 'cyclops',     hp=55, attack=9,  defense=10, damage=12)
+    TROLL = create_enemy('T', libtcod.darker_gray, 'troll',         hp=60, attack=7,  defense=12, damage=10)
+    HYDRA = create_enemy('H', libtcod.dark_cyan, 'hydra',           hp=50, attack=18, defense=9,  damage=20)
+    MINOTAUR = create_enemy('M', libtcod.darker_orange, 'minotaur', hp=60, attack=12, defense=12, damage=18)
+    DRAGON = create_enemy('D', libtcod.red, 'dragon',               hp=80, attack=10, defense=20, damage=15)
 
     # Weapons
-    DAGGER = create_weapon('dagger', attack=1, damage=2)
-    SHORTSWORD = create_weapon('shortsword', attack=3, damage=6)
-    ARMING_SWORD = create_weapon('arming sword', attack=5, damage=10)
-    LONGSWORD = create_weapon('longsword', attack=7, damage=14)
+    DAGGER = create_sword('dagger', attack=3, damage=2)
+    SPEAR = create_polearm('spear', attack=2, damage=3)
+    CLUB = create_heavy('club', attack=1, damage=6)
+    SHORTSWORD = create_sword('shortsword', attack=6, damage=4)
+    PIKE = create_polearm('pike', attack=4, damage=6)
+    MACE = create_heavy('mace', attack=3, damage=10)
+    ARMING_SWORD = create_sword('arming sword', attack=9, damage=6)
+    POLEAXE = create_polearm('poleaxe', attack=7, damage=8)
+    WARHAMMER = create_heavy('warhammer', attack=5, damage=14)
+    BASTARD_SWORD = create_sword('bastard sword', attack=12, damage=8)
+    HALBERD = create_polearm('halberd', attack=9, damage=12)
+    MORNING_STAR = create_heavy('morning star', attack=7, damage=18)
+    LONGSWORD = create_sword('longsword', attack=15, damage=10)
+    GLAIVE = create_polearm('glaive', attack=12, damage=14)
+    BATTLE_AXE = create_heavy('battle axe', attack=9, damage=22)
 
     # Armor
-    GAMBESON = create_armor('gambeson', defense=1, max_hp=5, color=libtcod.lighter_sepia)
-    LEATHER_CUIRASS = create_armor('leather cuirass', defense=3, max_hp=15, color=libtcod.sepia)
-    CHAIN_HAUBERK = create_armor('chain hauberk', defense=5, max_hp=25)
-    PLATE_ARMOR = create_armor('plate armor', defense=7, max_hp=35)
+    LIGHT_HAUBERK = create_def_armor('light hauberk', defense=3, hp=10)
+    GAMBESON = create_hp_armor('gambeson', defense=2, hp=15)
+    FULL_HAUBERK = create_def_armor('full hauberk', defense=6, hp=20)
+    LEATHER_CUIRASS = create_hp_armor('leather cuirass', defense=4, hp=30)
+    REINFORCED_MAIL = create_def_armor('reinforced mail', defense=9, hp=30)
+    PADDED_MAIL = create_hp_armor('padded mail', defense=6, hp=45)
+    PLATE_ARMOR = create_def_armor('plate armor', defense=12, hp=40)
+    LAMELLAR_ARMOR = create_hp_armor('lamellar armor', defense=8, hp=60)
 
     # Runes
     ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)
@@ -80,29 +126,54 @@ def weight_range(value, start, end):
 
 
 ENEMY_WEIGHTS = {
-    EntityTemplates.GOBLIN: [1, 3, 1, 1, 0],
-    EntityTemplates.ORC:    [0, 2, 3, 2, 2, 1, 0],
-    EntityTemplates.OGRE:   [0, 0, 0, 1],
-    EntityTemplates.TROLL:  [0, 0, 0, 0, 1, 1, 2]
+    EntityTemplates.GOBLIN:   [1, 2, 0],
+    EntityTemplates.KOBOLD:   [2, 0],
+    EntityTemplates.ZOMBIE:   [1, 2, 0],
+    EntityTemplates.ORC:      [0, 1, 2, 1, 0],
+    EntityTemplates.GNOLL:    [0, 0, 1, 3, 1, 1, 0],
+    EntityTemplates.SKELETON: [0, 1, 2, 1, 0],
+    EntityTemplates.SPIDER:   [0, 0, 0, 0, 1, 3, 3, 1, 0],
+    EntityTemplates.WEREWOLF: [0, 0, 0, 2, 2, 2, 1, 0],
+    EntityTemplates.OGRE:     [0, 0, 0, 0, 1, 3, 3, 1, 0],
+    EntityTemplates.WYVERN:   [0, 0, 0, 0, 0, 0, 1, 2, 2, 1],
+    EntityTemplates.CYCLOPS:  [0, 0, 0, 0, 0, 0, 1, 2, 2, 1],
+    EntityTemplates.TROLL:    [0, 0, 0, 0, 0, 0, 1, 2, 2, 1],
+    EntityTemplates.HYDRA:    [0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
+    EntityTemplates.MINOTAUR: [0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
+    EntityTemplates.DRAGON:   [0, 0, 0, 0, 0, 0, 0, 0, 1, 2]
 }
 
 ITEM_WEIGHTS = {
-    EntityTemplates.DAGGER: weight_range(1, 0, 1),
-    EntityTemplates.SHORTSWORD: weight_range(1, 2, 3),
-    EntityTemplates.ARMING_SWORD: weight_range(1, 4, 5),
-    EntityTemplates.LONGSWORD: weight_range(1, 6, 7),
+    EntityTemplates.DAGGER:        [2, 1, 0],
+    EntityTemplates.SPEAR:         [2, 1, 0],
+    EntityTemplates.CLUB:          [2, 1, 0],
+    EntityTemplates.SHORTSWORD:    [0, 1, 2, 1, 0, 0],
+    EntityTemplates.PIKE:          [0, 1, 2, 1, 0, 0],
+    EntityTemplates.MACE:          [0, 1, 2, 1, 0, 0],
+    EntityTemplates.ARMING_SWORD:  [0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.POLEAXE:       [0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.WARHAMMER:     [0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.BASTARD_SWORD: [0, 0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.HALBERD:       [0, 0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.MORNING_STAR:  [0, 0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.LONGSWORD:     [0, 0, 0, 0, 0, 0, 0, 1, 2, 0],
+    EntityTemplates.GLAIVE:        [0, 0, 0, 0, 0, 0, 0, 1, 2, 0],
+    EntityTemplates.BATTLE_AXE:    [0, 0, 0, 0, 0, 0, 0, 1, 2, 0],
 
-    EntityTemplates.GAMBESON: weight_range(1, 0, 1),
-    EntityTemplates.LEATHER_CUIRASS: weight_range(1, 2, 3),
-    EntityTemplates.CHAIN_HAUBERK: weight_range(1, 4, 5),
-    EntityTemplates.PLATE_ARMOR: weight_range(1, 6, 7),
+    EntityTemplates.LIGHT_HAUBERK:   [1, 2, 1, 0],
+    EntityTemplates.GAMBESON:        [1, 2, 1, 0],
+    EntityTemplates.FULL_HAUBERK:    [0, 0, 1, 2, 1, 0],
+    EntityTemplates.LEATHER_CUIRASS: [0, 0, 1, 2, 1, 0],
+    EntityTemplates.REINFORCED_MAIL: [0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.PADDED_MAIL:     [0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.PLATE_ARMOR:     [0, 0, 0, 0, 0, 0, 1, 2, 1, 0],
+    EntityTemplates.LAMELLAR_ARMOR:  [0, 0, 0, 0, 0, 0, 1, 2, 1, 0],
 
-    EntityTemplates.ROCK: [2],
-    EntityTemplates.RUNE_HEALING: [4],
-    EntityTemplates.RUNE_PAIN: [2],
-    EntityTemplates.RUNE_MIGHT: [1],
-    EntityTemplates.RUNE_PROTECTION: [1],
-    EntityTemplates.RUNE_TELEPORTATION: [1]
+    EntityTemplates.RUNE_HEALING: [8],
+    EntityTemplates.RUNE_PAIN: [4],
+    EntityTemplates.RUNE_MIGHT: [2],
+    EntityTemplates.RUNE_PROTECTION: [2],
+    EntityTemplates.RUNE_TELEPORTATION: [2]
 }
 
 

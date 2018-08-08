@@ -105,7 +105,7 @@ def generate_caves(**kwargs):
     for x in range(generator.width):
         for y in range(generator.height):
             if generator.grid[x][y] is CAVE_FLOOR or generator.grid[x][y] is CORRIDOR_FLOOR:
-                floors.add((x, y))
+                floors.append((x, y))
 
     for i in range(kwargs.get('stairs')):
         stair_x, stair_y = choice(floors)
@@ -123,41 +123,50 @@ def generate_caves(**kwargs):
 
 
 LEVEL_CONFIGURATIONS = {
-    1: {'tiles_per_enemy': 50, 'tiles_per_item': 60, 'generator': generate_dungeon,
+    1: {'tiles_per_enemy': 50, 'tiles_per_item': 60, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 40, 'height': 40, 'min_room_size': 4, 'max_room_size': 7,
+
                              'max_rooms': 100, 'extra_door_chance': 20,  'prune_deadends': 10, 'stairs': 2}},
-    2: {'tiles_per_enemy': 40, 'tiles_per_item': 55, 'generator': generate_dungeon,
+    2: {'tiles_per_enemy': 40, 'tiles_per_item': 55, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 55, 'height': 55, 'min_room_size': 4, 'max_room_size': 8,
                              'max_rooms': 150, 'extra_door_chance': 20,  'prune_deadends': 10, 'stairs': 2}},
-    3: {'tiles_per_enemy': 30, 'tiles_per_item': 50, 'generator': generate_dungeon,
+
+    3: {'tiles_per_enemy': 30, 'tiles_per_item': 50, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 70, 'height': 70, 'min_room_size': 5, 'max_room_size': 9,
                              'max_rooms': 200, 'extra_door_chance': 20,  'prune_deadends': 5, 'stairs': 3}},
-    4: {'tiles_per_enemy': 35, 'tiles_per_item': 55, 'generator': generate_dungeon,
+
+    4: {'tiles_per_enemy': 35, 'tiles_per_item': 55, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 60, 'height': 60, 'min_room_size': 4, 'max_room_size': 8,
                              'max_rooms': 200, 'extra_door_chance': 20, 'prune_deadends': 10, 'stairs': 3,
                              'caves': 37, 'min_cave_size': 25}},
-    5: {'tiles_per_enemy': 40, 'tiles_per_item': 55,
+
+    5: {'tiles_per_enemy': 40, 'tiles_per_item': 55, 'start_tile': Tiles.ROOM_FLOOR,
         'tile_overrides': {STAIRS: Tiles.CAVE_STAIRS}, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 50, 'height': 50, 'min_room_size': 4, 'max_room_size': 7,
                              'max_rooms': 200, 'extra_door_chance': 20, 'prune_deadends': 10, 'stairs': 2,
                              'caves': 40, 'min_cave_size': 25, 'cave_stairs': True}},
-    6: {'tiles_per_enemy': 60, 'tiles_per_item': 60,
+
+    6: {'tiles_per_enemy': 60, 'tiles_per_item': 60, 'start_tile': Tiles.CAVE_FLOOR,
         'tile_overrides': {CORRIDOR_FLOOR: Tiles.CAVE_FLOOR, CORRIDOR_WALL: Tiles.CAVE_WALL,
                            STAIRS: Tiles.CAVE_STAIRS}, 'generator': generate_caves,
         'generator_kwargs': {'width': 60, 'height': 60, 'caves': 40, 'min_cave_size': 35, 'stairs': 3}},
-    7: {'tiles_per_enemy': 50, 'tiles_per_item': 55,
+
+    7: {'tiles_per_enemy': 50, 'tiles_per_item': 55, 'start_tile': Tiles.CAVE_FLOOR,
         'tile_overrides': {CORRIDOR_FLOOR: Tiles.CAVE_FLOOR, CORRIDOR_WALL: Tiles.CAVE_WALL,
                            STAIRS: Tiles.CAVE_STAIRS}, 'generator': generate_caves,
         'generator_kwargs': {'width': 75, 'height': 75, 'caves': 40, 'min_cave_size': 35, 'stairs': 3}},
-    8: {'tiles_per_enemy': 40, 'tiles_per_item': 50,
+
+    8: {'tiles_per_enemy': 40, 'tiles_per_item': 50, 'start_tile': Tiles.CAVE_FLOOR,
         'tile_overrides': {CORRIDOR_FLOOR: Tiles.CAVE_FLOOR, CORRIDOR_WALL: Tiles.CAVE_WALL,
                            STAIRS: Tiles.CAVE_STAIRS}, 'generator': generate_caves,
         'generator_kwargs': {'width': 90, 'height': 90, 'caves': 40, 'min_cave_size': 35, 'stairs': 4}},
-    9: {'tiles_per_enemy': 30, 'tiles_per_item': 40, 'generator': generate_dungeon,
+
+    9: {'tiles_per_enemy': 30, 'tiles_per_item': 40, 'start_tile': Tiles.CAVE_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 70, 'height': 60, 'min_room_size': 5, 'max_room_size': 10,
                              'max_rooms': 200, 'extra_door_chance': 30, 'prune_deadends': 1, 'stairs': 3,
                              'caves': 37, 'min_cave_size': 25}},
-    10: {'tiles_per_enemy': 20, 'tiles_per_item': 30, 'generator': generate_dungeon,
+
+    10: {'tiles_per_enemy': 20, 'tiles_per_item': 30, 'start_tile': Tiles.CORRIDOR_FLOOR, 'generator': generate_dungeon,
          'generator_kwargs': {'width': 80, 'height': 80, 'min_room_size': 8, 'max_room_size': 14,
                               'max_rooms': 1, 'extra_door_chance': 30,  'prune_deadends': 1, 'stairs': 1}},
 }
@@ -281,8 +290,11 @@ class GameMap:
     def contains(self, x, y):
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def get_tile(self, x, y, value=True):
+    def get_tile(self, x, y, raw=False, value=True):
         int_tile = self.generator.grid[x][y]
+
+        if raw:
+            return int_tile
 
         obj_tile = self.tile_overrides.get(int_tile)
         if not obj_tile:

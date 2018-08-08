@@ -12,7 +12,10 @@ class Tile:
         self.blocks = blocks
 
         # By default, if a tile is blocked, it also blocks sight
-        self.blocks_sight = blocks_sight if blocks_sight else blocks
+        if blocks_sight is None:
+            self.blocks_sight = blocks
+        else:
+            self.blocks_sight = blocks_sight
 
         if character is None:
             character = '#' if blocks else '.'
