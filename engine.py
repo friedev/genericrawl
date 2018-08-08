@@ -125,6 +125,7 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
     looking = False
     combining = None
     throwing = None
+    exit_queued = False
 
     while not libtcod.console_is_window_closed():
         if recompute_fov:
@@ -344,8 +345,11 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
                 game_state = previous_game_state
                 throwing = None
                 looking = False
-            else:
+            elif exit_queued:
                 return False
+            else:
+                exit_queued = True
+                message_log.add_message(Message('Press escape again to quit the game.', libtcod.light_gray))
 
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -412,6 +416,7 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
             if player.fighter.max_hp < previous_max_hp:
                 player.fighter.hp = max(1, player.fighter.hp - (previous_max_hp - player.fighter.max_hp))
             previous_max_hp = player.fighter.max_hp
+            exit_queued = False
 
         # Process player turn results
         attack_message = player_results.get('attack_message')
