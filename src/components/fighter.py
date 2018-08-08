@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 from random import random, getrandbits
 
-from game_messages import Message
+from src.game_messages import Message
 
 
 def calc_hit_chance(attack, defense):

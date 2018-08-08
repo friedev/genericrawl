@@ -1,13 +1,14 @@
 from enum import Enum
+from random import randint
 
-from components.ai import BasicMonster
-from components.equipment import Equipment
-from components.fighter import Fighter
-from components.item import *
-from components.sight import Sight
-from components.slots import SlotTypes
-from entity import Entity
-from render import RenderOrder
+from src.components.ai import BasicMonster
+from src.components.equipment import Equipment
+from src.components.fighter import Fighter
+from src.components.item import *
+from src.components.sight import Sight
+from src.components.slots import SlotTypes
+from src.entity import Entity
+from src.render import RenderOrder
 
 
 def create_enemy(char, color, name, hp, defense, attack, damage, is_name_proper=False, fov_radius=8):

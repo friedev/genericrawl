@@ -1,3 +1,7 @@
+build
+dist
+*.spec
+
 # IntelliJ project files
 .idea
 *.iml

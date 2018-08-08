@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from game_messages import Message
+from src.game_messages import Message
 
 
 class Container:

@@ -1,7 +1,7 @@
 from enum import Enum
 
 import libtcodpy as libtcod
-from game_states import GameStates
+from src.game_states import GameStates
 
 
 def handle_mouse(mouse):

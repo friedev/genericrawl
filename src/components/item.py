@@ -1,10 +1,7 @@
-from random import randint
-
 import libtcodpy as libtcod
-from components.fighter import calc_hit_chance
-from components.slots import SlotTypes
-from game_messages import Message
-from status_effect import StatusEffect
+from src.components.slots import SlotTypes
+from src.game_messages import Message
+from src.status_effect import StatusEffect
 
 
 def get_throw_target(game_map, **kwargs):

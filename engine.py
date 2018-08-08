@@ -1,17 +1,17 @@
 import json
 
-from color_schemes import ColorSchemes, init_color_schemes
-from components.container import Container
-from components.fighter import Fighter
-from components.sight import Sight
-from components.slots import Slots
-from entity import Entity
-from fov import *
-from game_messages import MessageLog, Message, join_list
-from game_states import GameStates
-from input import InputSchemes, handle_mouse
-from map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
-from render import render_all, clear_all, RenderOrder
+from src.color_schemes import ColorSchemes, init_color_schemes
+from src.components.container import Container
+from src.components.fighter import Fighter
+from src.components.sight import Sight
+from src.components.slots import Slots
+from src.entity import Entity
+from src.fov import *
+from src.game_messages import MessageLog, Message, join_list
+from src.game_states import GameStates
+from src.input import InputSchemes, handle_mouse
+from src.map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
+from src.render import render_all, clear_all, RenderOrder
 
 
 def get_mouse_tile(console_width, console_height, player_x, player_y, mouse_x, mouse_y):
