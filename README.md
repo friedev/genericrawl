@@ -127,4 +127,4 @@ Have a question to ask? A cool suggestion? Feel free to contact me on any of the
 * Maugrift#5077 on Discord
   * I'm also somewhat active on the [roguelikes Discord](https://discord.gg/9pmFGKx), so you can also @ me there if you'd prefer.
 
-Having problems with the game? If you can, open an issue on GitHub here. Otherwise, you can you contact me with one of the links above.
+Having problems with the game? If you can, open an issue on GitHub [here](https://github.com/Maugrift/GeneriCrawl/issues). Otherwise, you can you contact me with one of the links above.
