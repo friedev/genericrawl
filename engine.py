@@ -1,3 +1,5 @@
+import json
+
 from color_schemes import ColorSchemes, init_color_schemes
 from components.container import Container
 from components.fighter import Fighter
@@ -9,7 +11,6 @@ from game_messages import MessageLog, Message, join_list
 from game_states import GameStates
 from input import InputSchemes, handle_mouse
 from map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
-from map.tile import Tiles
 from render import render_all, clear_all, RenderOrder
 
 
@@ -28,6 +29,12 @@ def get_mouse_tile(console_width, console_height, player_x, player_y, mouse_x, m
 
 def move_cursor(key_cursor, dx, dy):
     return key_cursor[0] + dx, key_cursor[1] + dy
+
+
+def get_scheme(name, scheme_enum):
+    for scheme in scheme_enum:
+        if scheme.value.name == name:
+            return scheme
 
 
 def cycle_scheme(scheme, scheme_enum, direction_input):
@@ -58,11 +65,14 @@ def get_look_message(x, y, game_map, fov_map, player):
 
 
 def main():
+    with open('options.json') as option_file:
+        options = json.load(option_file)
+
     init_color_schemes()
 
     # Screen dimensions, in characters
-    screen_width = 128
-    screen_height = 72
+    screen_width = options.get('screen_width')
+    screen_height = options.get('screen_height')
 
     # Panel dimensions, in characters
     panel_width = screen_width
@@ -82,15 +92,18 @@ def main():
     panel = libtcod.console_new(panel_width, panel_height)
     message_log = MessageLog(message_x, message_width, message_height)
 
-    input_scheme = InputSchemes.VI
-    color_scheme = ColorSchemes.SOLID
-
     restart = True
     while restart:
-        restart = play_game(console, panel, bar_width, message_log, input_scheme, color_scheme)
+        restart = play_game(console, panel, bar_width, message_log, options)
+
+    with open('options.json', 'w') as option_file:
+        json.dump(options, option_file)
 
 
-def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme, viewing_map=False):
+def play_game(console, panel, bar_width, message_log, options, viewing_map=False):
+    color_scheme = get_scheme(options.get('color_scheme'), ColorSchemes)
+    input_scheme = get_scheme(options.get('input_scheme'), InputSchemes)
+
     game_map = GameMap(1)
     start_tile = LEVEL_CONFIGURATIONS.get(1).get('start_tile')
     if viewing_map:
@@ -356,10 +369,12 @@ def play_game(console, panel, bar_width, message_log, input_scheme, color_scheme
 
         if color_scheme_input:
             color_scheme = cycle_scheme(color_scheme, ColorSchemes, color_scheme_input)
+            options['color_scheme'] = color_scheme.value.name
             message_log.add_message(Message('Color Scheme: ' + color_scheme.value.name, libtcod.light_gray))
 
         if input_scheme_input:
             input_scheme = cycle_scheme(input_scheme, InputSchemes, input_scheme_input)
+            options['input_scheme'] = input_scheme.value.name
             message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, libtcod.light_gray))
 
         # Process actions with multiple triggers
