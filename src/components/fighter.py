@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from random import random, getrandbits
+from random import random, getrandbits, randint
 
 from src.game_messages import Message
 
@@ -17,6 +17,12 @@ def calc_hit_chance(attack, defense):
     chance = attack / defense / 2
     clamped_chance = max(0, min(1, chance))
     return random() < clamped_chance
+
+
+def calc_damage(damage):
+    max_variation = max(1, int(damage / 4))
+    variation = randint(-max_variation, max_variation)
+    return max(1, damage + variation)
 
 
 class Fighter:
@@ -92,17 +98,21 @@ class Fighter:
         results = target.take_damage(self.damage)
 
         results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
-            self.owner.definite_name.capitalize(), target.owner.definite_name, self.damage))
+            self.owner.definite_name.capitalize(), target.owner.definite_name, results.get('damage')))
 
         return results
 
-    def take_damage(self, amount):
+    def take_damage(self, amount, randomize=True):
+        if randomize:
+            amount = calc_damage(amount)
+        results = {'damage': amount}
+
         self.hp = max(self.hp - amount, 0)
 
         if self.hp == 0:
-            return {'dead': [self.owner]}
+            results['dead'] = [self.owner]
 
-        return {}
+        return results
 
     def heal(self, amount):
         actual_amount = min(self.max_hp - self.hp, amount)

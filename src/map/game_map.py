@@ -101,6 +101,10 @@ def generate_caves(**kwargs):
     # Create a copy of the grid, acting as a buffer for the next step
     grid_copy = [[CAVE_WALL for y in range(height)] for x in range(width)]
 
+    for x in range(generator.width):
+        for y in range(generator.height):
+            grid_copy[x + 1][y + 1] = generator.grid[x][y]
+
     floors = []
     for x in range(generator.width):
         for y in range(generator.height):
@@ -112,10 +116,6 @@ def generate_caves(**kwargs):
         floors.remove((stair_x, stair_y))
         grid_copy[stair_x + 1][stair_y + 1] = STAIRS
 
-    for x in range(generator.width):
-        for y in range(generator.height):
-            grid_copy[x + 1][y + 1] = generator.grid[x][y]
-
     generator.width = width
     generator.height = height
     generator.grid = grid_copy
@@ -123,11 +123,11 @@ def generate_caves(**kwargs):
 
 
 LEVEL_CONFIGURATIONS = {
-    1: {'tiles_per_enemy': 50, 'tiles_per_item': 60, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
+    1: {'tiles_per_enemy': 50, 'tiles_per_item': 40, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 40, 'height': 40, 'min_room_size': 4, 'max_room_size': 7,
 
                              'max_rooms': 100, 'extra_door_chance': 20,  'prune_deadends': 10, 'stairs': 2}},
-    2: {'tiles_per_enemy': 40, 'tiles_per_item': 55, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
+    2: {'tiles_per_enemy': 40, 'tiles_per_item': 45, 'start_tile': Tiles.ROOM_FLOOR, 'generator': generate_dungeon,
         'generator_kwargs': {'width': 55, 'height': 55, 'min_room_size': 4, 'max_room_size': 8,
                              'max_rooms': 150, 'extra_door_chance': 20,  'prune_deadends': 10, 'stairs': 2}},
 
