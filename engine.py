@@ -114,7 +114,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
     player_sight = Sight()
     player_fighter = Fighter(hp=20, defense=1, attack=1, damage=2)
     player_slots = Slots()
-    player_container = Container(26)
+    player_container = Container(20)
     player = Entity(*player_tile, player_char, libtcod.white, 'player', render_order=RenderOrder.PLAYER,
                     components={'sight': player_sight, 'fighter': player_fighter, 'slots': player_slots,
                                 'container': player_container})
@@ -309,6 +309,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 item.x = player.x
                 item.y = player.y
                 game_map.entities.append(item)
+                message_log.add_message(Message('You drop {0}.'.format(item.definite_name), libtcod.light_blue))
                 player_acted = True
 
         if use and game_state is GameStates.INVENTORY:

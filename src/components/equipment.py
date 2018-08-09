@@ -1,6 +1,7 @@
 class Equipment:
-    def __init__(self, slot, max_hp_bonus=0, attack_bonus=0, defense_bonus=0, damage_bonus=0, enchantments={}):
+    def __init__(self, slot, tier=1, max_hp_bonus=0, attack_bonus=0, defense_bonus=0, damage_bonus=0, enchantments={}):
         self.slot = slot
+        self.tier = tier
         self.base_max_hp_bonus = max_hp_bonus
         self.base_attack_bonus = attack_bonus
         self.base_defense_bonus = defense_bonus

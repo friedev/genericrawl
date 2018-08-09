@@ -18,36 +18,38 @@ def create_enemy(char, color, name, hp, defense, attack, damage, is_name_proper=
                               'ai': BasicMonster()})
 
 
-def create_sword(name, attack, damage, is_name_proper=False):
-    return create_weapon('(', libtcod.lighter_gray, name, attack, damage, is_name_proper)
+def create_sword(name, tier, attack, damage, is_name_proper=False):
+    return create_weapon('(', libtcod.lighter_gray, name, tier, attack, damage, is_name_proper)
 
 
-def create_polearm(name, attack, damage, is_name_proper=False):
-    return create_weapon('|', libtcod.darker_orange, name, attack, damage, is_name_proper)
+def create_polearm(name, tier, attack, damage, is_name_proper=False):
+    return create_weapon('|', libtcod.darker_orange, name, tier, attack, damage, is_name_proper)
 
 
-def create_heavy(name, attack, damage, is_name_proper=False):
-    return create_weapon('/', libtcod.dark_gray, name, attack, damage, is_name_proper)
+def create_heavy(name, tier, attack, damage, is_name_proper=False):
+    return create_weapon('/', libtcod.dark_gray, name, tier, attack, damage, is_name_proper)
 
 
-def create_weapon(char, color, name, attack, damage, is_name_proper=False):
+def create_weapon(char, color, name, tier, attack, damage, is_name_proper=False):
     return Entity(0, 0, char, color, name, is_name_proper=is_name_proper, blocks=False, render_order=RenderOrder.ITEM,
                   components={'item': Item(use_function=equip),
-                              'equipment': Equipment(SlotTypes.WEAPON, attack_bonus=attack, damage_bonus=damage)})
+                              'equipment': Equipment(SlotTypes.WEAPON, tier=tier, attack_bonus=attack,
+                                                     damage_bonus=damage)})
 
 
-def create_def_armor(name, defense, hp, is_name_proper=False):
-    return create_armor('}', libtcod.lighter_gray, name, defense, hp, is_name_proper)
+def create_def_armor(name, tier, defense, hp, is_name_proper=False):
+    return create_armor('}', libtcod.lighter_gray, name, tier, defense, hp, is_name_proper)
 
 
-def create_hp_armor(name, defense, hp, is_name_proper=False):
-    return create_armor('[', libtcod.darker_orange, name, defense, hp, is_name_proper)
+def create_hp_armor(name, tier, defense, hp, is_name_proper=False):
+    return create_armor('[', libtcod.darker_orange, name, tier, defense, hp, is_name_proper)
 
 
-def create_armor(char, color, name, defense, hp, is_name_proper=False):
+def create_armor(char, color, name, tier, defense, hp, is_name_proper=False):
     return Entity(0, 0, char, color, name, is_name_proper=is_name_proper, blocks=False, render_order=RenderOrder.ITEM,
                   components={'item': Item(use_function=equip),
-                              'equipment': Equipment(SlotTypes.ARMOR, defense_bonus=defense, max_hp_bonus=hp)})
+                              'equipment': Equipment(SlotTypes.ARMOR, tier=tier, defense_bonus=defense,
+                                                     max_hp_bonus=hp)})
 
 
 def create_rune(color, name, rune_function, char='*', is_name_proper=False, combine_function=None, throw_function=None,
@@ -79,31 +81,31 @@ class EntityTemplates(Enum):
     DRAGON = create_enemy('D', libtcod.red, 'dragon',               hp=80, attack=10, defense=20, damage=15)
 
     # Weapons
-    DAGGER = create_sword('dagger', attack=3, damage=2)
-    SPEAR = create_polearm('spear', attack=2, damage=3)
-    CLUB = create_heavy('club', attack=1, damage=6)
-    SHORTSWORD = create_sword('shortsword', attack=6, damage=4)
-    PIKE = create_polearm('pike', attack=4, damage=6)
-    MACE = create_heavy('mace', attack=3, damage=10)
-    ARMING_SWORD = create_sword('arming sword', attack=9, damage=6)
-    POLEAXE = create_polearm('poleaxe', attack=7, damage=8)
-    WARHAMMER = create_heavy('warhammer', attack=5, damage=14)
-    BASTARD_SWORD = create_sword('bastard sword', attack=12, damage=8)
-    HALBERD = create_polearm('halberd', attack=9, damage=12)
-    MORNING_STAR = create_heavy('morning star', attack=7, damage=18)
-    LONGSWORD = create_sword('longsword', attack=15, damage=10)
-    GLAIVE = create_polearm('glaive', attack=12, damage=14)
-    BATTLE_AXE = create_heavy('battle axe', attack=9, damage=22)
+    DAGGER = create_sword('dagger',               tier=1, attack=3,  damage=2)
+    SPEAR = create_polearm('spear',               tier=1, attack=2,  damage=3)
+    CLUB = create_heavy('club',                   tier=1, attack=1,  damage=6)
+    SHORTSWORD = create_sword('shortsword',       tier=3, attack=6,  damage=4)
+    PIKE = create_polearm('pike',                 tier=3, attack=4,  damage=6)
+    MACE = create_heavy('mace',                   tier=3, attack=3,  damage=10)
+    ARMING_SWORD = create_sword('arming sword',   tier=5, attack=9,  damage=6)
+    POLEAXE = create_polearm('poleaxe',           tier=5, attack=7,  damage=8)
+    WARHAMMER = create_heavy('warhammer',         tier=5, attack=5,  damage=14)
+    BASTARD_SWORD = create_sword('bastard sword', tier=7, attack=12, damage=8)
+    HALBERD = create_polearm('halberd',           tier=7, attack=9,  damage=12)
+    MORNING_STAR = create_heavy('morning star',   tier=7, attack=7,  damage=18)
+    LONGSWORD = create_sword('longsword',         tier=9, attack=15, damage=10)
+    GLAIVE = create_polearm('glaive',             tier=9, attack=12, damage=14)
+    BATTLE_AXE = create_heavy('battle axe',       tier=9, attack=9,  damage=22)
 
     # Armor
-    LIGHT_HAUBERK = create_def_armor('light hauberk', defense=3, hp=10)
-    GAMBESON = create_hp_armor('gambeson', defense=2, hp=15)
-    FULL_HAUBERK = create_def_armor('full hauberk', defense=6, hp=20)
-    LEATHER_CUIRASS = create_hp_armor('leather cuirass', defense=4, hp=30)
-    REINFORCED_MAIL = create_def_armor('reinforced mail', defense=9, hp=30)
-    PADDED_MAIL = create_hp_armor('padded mail', defense=6, hp=45)
-    PLATE_ARMOR = create_def_armor('plate armor', defense=12, hp=40)
-    LAMELLAR_ARMOR = create_hp_armor('lamellar armor', defense=8, hp=60)
+    LIGHT_HAUBERK = create_def_armor('light hauberk',     tier=2, defense=3,  hp=10)
+    GAMBESON = create_hp_armor('gambeson',                tier=2, defense=2,  hp=15)
+    FULL_HAUBERK = create_def_armor('full hauberk',       tier=4, defense=6,  hp=20)
+    LEATHER_CUIRASS = create_hp_armor('leather cuirass',  tier=4, defense=4,  hp=30)
+    REINFORCED_MAIL = create_def_armor('reinforced mail', tier=6, defense=9,  hp=30)
+    PADDED_MAIL = create_hp_armor('padded mail',          tier=6, defense=6,  hp=45)
+    PLATE_ARMOR = create_def_armor('plate armor',         tier=8, defense=12, hp=40)
+    LAMELLAR_ARMOR = create_hp_armor('lamellar armor',    tier=8, defense=8,  hp=60)
 
     # Runes
     ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)

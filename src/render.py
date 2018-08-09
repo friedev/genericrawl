@@ -148,7 +148,8 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
     libtcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 
     if game_state == GameStates.INVENTORY:
-        inventory_menu(console, 'Inventory\n', player, 50, screen_width, screen_height, menu_selection)
+        inventory_menu(console, 'Inventory ({0}/{1})\n'.format(len(player.container.items), player.container.capacity),
+                       player, 50, screen_width, screen_height, menu_selection)
 
 
 def clear_all(console, entities, player):

@@ -20,7 +20,7 @@ def menu(console, header, options, width, screen_width, screen_height, selection
         if number_shortcut <= 10:
             text = str(number_shortcut % 10) + '. ' + option_text
         else:
-            text = option_text
+            text = '  ' + option_text
 
         if selection is number_shortcut - 1:
             libtcod.console_set_default_foreground(window, libtcod.light_blue)
@@ -43,12 +43,36 @@ def inventory_menu(console, header, player, inventory_width, screen_width, scree
         header = header + '\nInventory is empty.'
         options = []
     else:
+        player.container.items = sorted(player.container.items,
+                                        key=lambda i: i.equipment.tier if i.equipment else 0, reverse=True)
+
         options = []
+        stacks = {}
 
         for item in player.container.items:
-            if player.slots.is_equipped(item):
-                options.append(item.name + ' (equipped)')
+            item_string = item.name
+            if item.equipment:
+                if item.equipment.enchantments:
+                    item_string = '+{0} '.format(len(item.equipment.enchantments)) + item_string
+
+                item_string += ' [{0}]'.format(item.equipment.tier)
+
+                if player.slots.is_equipped(item):
+                    item_string += ' (equipped)'
+
+                options.append(item_string)
             else:
-                options.append(item.name)
+                stack = stacks.get(item.name)
+                if stack:
+                    stacks[item.name] += 1
+                else:
+                    stacks[item.name] = 1
+
+        for stack in stacks.keys():
+            amount = stacks.get(stack)
+            if amount == 1:
+                options.append(stack)
+            else:
+                options.append('{0} (x{1})'.format(stack, stacks.get(stack)))
 
     menu(console, header, options, inventory_width, screen_width, screen_height, selection)
