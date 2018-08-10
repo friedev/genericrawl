@@ -84,7 +84,7 @@ class Fighter:
 
         return self.base_damage + bonus
 
-    def attack_entity(self, target):
+    def attack_entity(self, target, is_player=False, target_is_player=False):
         attack_hit = calc_hit_chance(self.attack, target.defense)
 
         if not attack_hit:
@@ -97,8 +97,15 @@ class Fighter:
 
         results = target.take_damage(self.damage)
 
+        if is_player:
+            color = libtcod.green
+        elif target_is_player:
+            color = libtcod.red
+        else:
+            color = libtcod.white
+
         results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
-            self.owner.definite_name.capitalize(), target.owner.definite_name, results.get('damage')))
+            self.owner.definite_name.capitalize(), target.owner.definite_name, results.get('damage')), color)
 
         return results
 

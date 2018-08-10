@@ -224,7 +224,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
                         if blocking_entities:
                             target = blocking_entities[0]
-                            attack_results = player.fighter.attack_entity(target.fighter)
+                            attack_results = player.fighter.attack_entity(target.fighter, is_player=True)
                             player_results.update(attack_results)
                             player_acted = True
                             # moved = True

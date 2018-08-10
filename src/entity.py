@@ -121,7 +121,7 @@ class Entity:
         if is_player:
             death_message = Message('You die...', libtcod.red)
         else:
-            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), libtcod.red)
+            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), libtcod.green)
             self.render_order = RenderOrder.CORPSE
 
         if self.is_name_proper:

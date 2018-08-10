@@ -59,11 +59,11 @@ def throw_std(*args, **kwargs):
     results.update({'item_consumed': item})
 
     if amount > 0:
-        results['use_message'] = Message('{0} hits {1} for {2} HP, breaking in the process.'.format(
-            item.definite_name.capitalize(), target.definite_name, amount))
+        results['use_message'] = Message('{0} hits {1} for {2} HP, breaking on impact.'.format(
+            item.definite_name.capitalize(), target.definite_name, amount), libtcod.green)
     else:
         results['use_message'] = Message('{0} shatters harmlessly against {1}.'.format(
-            item.definite_name.capitalize(), target.definite_name))
+            item.definite_name.capitalize(), target.definite_name), libtcod.yellow)
     return results
 
 
@@ -134,7 +134,7 @@ def heal(*args, **kwargs):
         else:
             results['use_message'] = Message('{0} recovers {1} HP.'.format(target.definite_name.capitalize(),
                                                                            amount_healed),
-                                             libtcod.green)
+                                             libtcod.red)
 
     return results
 
@@ -194,7 +194,7 @@ def pain(*args, **kwargs):
                                          libtcod.red)
     else:
         results['use_message'] = Message('{0} loses {1} HP.'.format(target.definite_name.capitalize(), actual_amount),
-                                         libtcod.red)
+                                         libtcod.green)
 
     return results
 
@@ -247,10 +247,10 @@ def might(*args, **kwargs):
     results = {'item_consumed': item}
     if player_using:
         results['use_message'] = Message('Your muscles grow rapidly! You gain {0} attack.'.format(actual_amount),
-                                         libtcod.yellow)
+                                         libtcod.green)
     else:
         results['use_message'] = Message('{0} appears stronger.'.format(target.definite_name.capitalize()),
-                                         libtcod.yellow)
+                                         libtcod.red)
 
     return results
 
@@ -303,10 +303,10 @@ def protection(*args, **kwargs):
     results = {'item_consumed': item}
     if player_using:
         results['use_message'] = Message('Your body feels tougher! You gain {0} defense.'.format(actual_amount),
-                                         libtcod.yellow)
+                                         libtcod.green)
     else:
         results['use_message'] = Message('{0} appears more resilient.'.format(target.definite_name.capitalize()),
-                                         libtcod.yellow)
+                                         libtcod.red)
 
     return results
 

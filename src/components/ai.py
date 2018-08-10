@@ -13,7 +13,7 @@ class BasicMonster:
 
         if dist < 2:
             # Attack the player, even if the entity can't see
-            return self.owner.fighter.attack_entity(player.fighter)
+            return self.owner.fighter.attack_entity(player.fighter, target_is_player=True)
 
         results = {}
         given_fov_map = fov_map is not None
