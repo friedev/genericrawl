@@ -1,5 +1,6 @@
 class Equipment:
-    def __init__(self, slot, tier=1, max_hp_bonus=0, attack_bonus=0, defense_bonus=0, damage_bonus=0, enchantments={}):
+    def __init__(self, slot, tier=1, max_hp_bonus=0, attack_bonus=0, defense_bonus=0, damage_bonus=0, enchantments={},
+                 n_enchantments=0):
         self.slot = slot
         self.tier = tier
         self.base_max_hp_bonus = max_hp_bonus
@@ -7,6 +8,7 @@ class Equipment:
         self.base_defense_bonus = defense_bonus
         self.base_damage_bonus = damage_bonus
         self.enchantments = enchantments
+        self.n_enchantments = n_enchantments
 
     @property
     def max_hp_bonus(self):

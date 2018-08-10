@@ -59,7 +59,8 @@ def construct_inventory_options(player):
         item_string = item.name
         if item.equipment:
             if item.equipment.enchantments:
-                item_string = '+{0} '.format(len(item.equipment.enchantments)) + item_string
+                item_string = '{0}{1} '.format('-' if item.equipment.n_enchantments < 0 else '+',
+                                               abs(item.equipment.n_enchantments)) + item_string
 
             item_string += ' [{0}]'.format(item.equipment.tier)
 
@@ -80,5 +81,5 @@ def construct_inventory_options(player):
             options.append(stack)
         else:
             options.append('{0} (x{1})'.format(stack, stacks.get(stack)))
-    
+
     return options

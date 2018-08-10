@@ -84,6 +84,7 @@ def heal(*args, **kwargs):
                     combine_target.equipment.enchantments['damage_bonus'] += weapon_amount
                 else:
                     combine_target.equipment.enchantments['damage_bonus'] = weapon_amount
+                combine_target.equipment.n_enchantments -= 1
                 results.update({'use_message': Message('{0} loses {1} damage.'.format(
                     combine_target.definite_name.capitalize(), abs(weapon_amount)), libtcod.red)})
             elif combine_target.equipment.slot is SlotTypes.ARMOR:
@@ -92,6 +93,7 @@ def heal(*args, **kwargs):
                     combine_target.equipment.enchantments['max_hp_bonus'] += armor_amount
                 else:
                     combine_target.equipment.enchantments['max_hp_bonus'] = armor_amount
+                combine_target.equipment.n_enchantments += 1
                 results.update({'use_message': Message('{0} gains {1} max HP.'.format(
                     combine_target.definite_name.capitalize(), armor_amount), libtcod.green)})
 
@@ -155,6 +157,7 @@ def pain(*args, **kwargs):
                     combine_target.equipment.enchantments['damage_bonus'] += weapon_amount
                 else:
                     combine_target.equipment.enchantments['damage_bonus'] = weapon_amount
+                combine_target.equipment.n_enchantments += 1
                 results.update({'use_message': Message('{0} gains {1} damage.'.format(
                     combine_target.definite_name.capitalize(), weapon_amount), libtcod.green)})
             elif combine_target.equipment.slot is SlotTypes.ARMOR:
@@ -163,6 +166,7 @@ def pain(*args, **kwargs):
                     combine_target.equipment.enchantments['max_hp_bonus'] += armor_amount
                 else:
                     combine_target.equipment.enchantments['max_hp_bonus'] = armor_amount
+                combine_target.equipment.n_enchantments -= 1
                 results.update({'use_message': Message('{0} loses {1} max HP.'.format(
                     combine_target.definite_name.capitalize(), abs(armor_amount)), libtcod.red)})
 
@@ -210,6 +214,7 @@ def might(*args, **kwargs):
         combine_target = kwargs.get('combine_target')
         if combine_target.equipment and combine_target.equipment.slot is SlotTypes.WEAPON:
             weapon_amount = kwargs.get('weapon_amount')
+            combine_target.equipment.n_enchantments += 1
             if combine_target.equipment.enchantments.get('attack_bonus'):
                 combine_target.equipment.enchantments['attack_bonus'] += weapon_amount
             else:
@@ -266,6 +271,7 @@ def protection(*args, **kwargs):
         combine_target = kwargs.get('combine_target')
         if combine_target.equipment and combine_target.equipment.slot is SlotTypes.ARMOR:
             armor_amount = kwargs.get('armor_amount')
+            combine_target.equipment.n_enchantments += 1
             if combine_target.equipment.enchantments.get('defense_bonus'):
                 combine_target.equipment.enchantments['defense_bonus'] += armor_amount
             else:
