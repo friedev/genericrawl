@@ -37,42 +37,48 @@ def menu(console, header, options, width, screen_width, screen_height, selection
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
-def inventory_menu(console, header, player, inventory_width, screen_width, screen_height, selection):
+def inventory_menu(console, header, player, inventory_width, screen_width, screen_height, selection, options=None):
     # Show a menu with each item of the inventory as an option
     if len(player.container.items) == 0:
         header = header + '\nInventory is empty.'
         options = []
-    else:
-        player.container.items = sorted(player.container.items,
-                                        key=lambda i: i.equipment.tier if i.equipment else 0, reverse=True)
-
-        options = []
-        stacks = {}
-
-        for item in player.container.items:
-            item_string = item.name
-            if item.equipment:
-                if item.equipment.enchantments:
-                    item_string = '+{0} '.format(len(item.equipment.enchantments)) + item_string
-
-                item_string += ' [{0}]'.format(item.equipment.tier)
-
-                if player.slots.is_equipped(item):
-                    item_string += ' (equipped)'
-
-                options.append(item_string)
-            else:
-                stack = stacks.get(item.name)
-                if stack:
-                    stacks[item.name] += 1
-                else:
-                    stacks[item.name] = 1
-
-        for stack in stacks.keys():
-            amount = stacks.get(stack)
-            if amount == 1:
-                options.append(stack)
-            else:
-                options.append('{0} (x{1})'.format(stack, stacks.get(stack)))
+    elif not options:
+        options = construct_inventory_options(player)
 
     menu(console, header, options, inventory_width, screen_width, screen_height, selection)
+
+
+def construct_inventory_options(player):
+    player.container.items = sorted(player.container.items,
+                                    key=lambda i: i.equipment.tier if i.equipment else 0, reverse=True)
+
+    options = []
+    stacks = {}
+
+    for item in player.container.items:
+        item_string = item.name
+        if item.equipment:
+            if item.equipment.enchantments:
+                item_string = '+{0} '.format(len(item.equipment.enchantments)) + item_string
+
+            item_string += ' [{0}]'.format(item.equipment.tier)
+
+            if player.slots.is_equipped(item):
+                item_string += ' (equipped)'
+
+            options.append(item_string)
+        else:
+            stack = stacks.get(item.name)
+            if stack:
+                stacks[item.name] += 1
+            else:
+                stacks[item.name] = 1
+
+    for stack in stacks.keys():
+        amount = stacks.get(stack)
+        if amount == 1:
+            options.append(stack)
+        else:
+            options.append('{0} (x{1})'.format(stack, stacks.get(stack)))
+    
+    return options

@@ -30,7 +30,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
 
 
 def render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme,
-               game_state, mouse, menu_selection=0, key_cursor=None, viewing_map=False):
+               game_state, mouse, menu_selection=0, key_cursor=None, inventory_options=None, viewing_map=False):
     # Screen dimensions
     screen_width = libtcod.console_get_width(console)
     screen_height = libtcod.console_get_height(console)
@@ -149,7 +149,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
 
     if game_state == GameStates.INVENTORY:
         inventory_menu(console, 'Inventory ({0}/{1})\n'.format(len(player.container.items), player.container.capacity),
-                       player, 50, screen_width, screen_height, menu_selection)
+                       player, 50, screen_width, screen_height, menu_selection, inventory_options)
 
 
 def clear_all(console, entities, player):

@@ -1,5 +1,6 @@
 import json
 
+from menu import construct_inventory_options
 from src.color_schemes import ColorSchemes, init_color_schemes
 from src.components.container import Container
 from src.components.fighter import Fighter
@@ -135,6 +136,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
     key_cursor = (0, 0)
     menu_selection = 0
+    inventory_options = None
     looking = False
     combining = None
     throwing = None
@@ -146,7 +148,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
         render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme.value,
                    game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None,
-                   viewing_map)
+                   inventory_options, viewing_map)
         libtcod.console_flush()
         libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
         clear_all(console, game_map.entities, player)
@@ -260,8 +262,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 dy = direction[1]
                 menu_selection += dy
                 if menu_selection < 0:
-                    menu_selection = len(player.container.items) - 1
-                elif menu_selection >= len(player.container.items):
+                    menu_selection = len(inventory_options) - 1
+                elif menu_selection >= len(inventory_options):
                     menu_selection = 0
             elif game_state is GameStates.TARGETING:
                 # Moves the key_cursor in the given direction
@@ -269,6 +271,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
         if inventory:
             menu_selection = 0
+            inventory_options = construct_inventory_options(player)
             if game_state is GameStates.INVENTORY:
                 game_state = previous_game_state
             elif game_state is GameStates.PLAYER_TURN:
@@ -278,14 +281,14 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
         # is not None check is required since 0 evaluates to False
         if index is not None:
             if game_state is GameStates.INVENTORY:
-                menu_selection = max(0, min(len(player.container.items) - 1, index))
-                if combining and len(player.container.items):
-                    combine_target = player.container.items[menu_selection]
+                menu_selection = max(0, min(len(inventory_options) - 1, index))
+                if combining and len(inventory_options):
+                    combine_target = player.container.get_item(inventory_options[menu_selection])
 
         if select:
             if game_state is GameStates.INVENTORY:
-                if combining and menu_selection < len(player.container.items):
-                    combine_target = player.container.items[menu_selection]
+                if combining and menu_selection < len(inventory_options):
+                    combine_target = player.container.get_item(inventory_options[menu_selection])
                 else:
                     do_use = True
             elif game_state is GameStates.TARGETING:
@@ -302,7 +305,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
         if drop and game_state is GameStates.INVENTORY:
-            if menu_selection < len(player.container.items):
+            if menu_selection < len(inventory_options):
                 item = player.container.items.pop(menu_selection)
                 if player.slots.is_equipped(item):
                     player.slots.toggle_equip(item)
@@ -316,8 +319,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
             do_use = True
 
         if combine and game_state is GameStates.INVENTORY:
-            if menu_selection < len(player.container.items):
-                selected_item = player.container.items[menu_selection]
+            if menu_selection < len(inventory_options):
+                selected_item = player.container.get_item(inventory_options[menu_selection])
                 if not combining:
                     combining = selected_item
                 else:
@@ -325,8 +328,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 previous_game_state = GameStates.PLAYER_TURN
 
         if throw and game_state is GameStates.INVENTORY:
-            if menu_selection < len(player.container.items):
-                throwing = player.container.items[menu_selection]
+            if menu_selection < len(inventory_options):
+                throwing = player.container.get_item(inventory_options[menu_selection])
                 previous_game_state = GameStates.PLAYER_TURN
                 game_state = GameStates.TARGETING
                 key_cursor = (player.x, player.y)
@@ -380,8 +383,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
         # Process actions with multiple triggers
         if do_use:
-            if menu_selection < len(player.container.items):
-                use_results = player.container.items[menu_selection].item.use(player, game_map)
+            if menu_selection < len(inventory_options):
+                use_results = player.container.get_item(inventory_options[menu_selection]).item.use(player, game_map)
                 player_results.update(use_results)
                 player_acted = True
 

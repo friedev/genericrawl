@@ -327,10 +327,8 @@ def teleportation(*args, **kwargs):
     else:
         target = get_throw_target(game_map, **kwargs)
         if not target:
-            target_x = kwargs.get('target_x')
-            target_y = kwargs.get('target_y')
             return {'use_message': Message('{0} suddenly vanishes.'.format(item.definite_name.capitalize()),
-                                           libtcod.magenta), 'item_moved': item, 'item_x': target_x, 'item_y': target_y}
+                                           libtcod.magenta), 'item_consumed': item}
 
     player_using = target == args[0]
 

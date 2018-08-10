@@ -1,3 +1,5 @@
+from operator import contains
+
 import libtcodpy as libtcod
 from src.game_messages import Message
 
@@ -20,3 +22,8 @@ class Container:
             self.items.append(item)
 
         return results
+
+    def get_item(self, name):
+        for item in self.items:
+            if contains(name, item.name):
+                return item
