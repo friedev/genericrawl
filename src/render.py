@@ -67,7 +67,7 @@ def render_all(console, panel, bar_width, message_log, game_map, player, fov_map
                 background = color_scheme.background.get(tile)
 
                 if viewing_map or libtcod.map_is_in_fov(fov_map, tile_x, tile_y):
-                    if color_scheme.allow_fade:
+                    if color_scheme.allow_fade and not viewing_map:
                         foreground = apply_fov_gradient(foreground, distance(player.x, player.y, tile_x, tile_y),
                                                         player.sight.fov_radius)
                         background = apply_fov_gradient(background, distance(player.x, player.y, tile_x, tile_y),
@@ -163,7 +163,6 @@ def clear_all(console, entities, player):
 
 # Used to brighten tiles near the player and darken ones further away
 def apply_fov_gradient(tile_color, tile_distance, fov_radius, brightness_range=32, max_brightness=16):
-    return tile_color
     color_mod = int(brightness_range * (tile_distance / fov_radius)) - max_brightness
 
     # If the color modifier is above zero, the tile is darkened, otherwise it is lightened

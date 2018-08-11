@@ -306,7 +306,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
         if drop and game_state is GameStates.INVENTORY:
             if menu_selection < len(inventory_options):
-                item = player.container.items.pop(menu_selection)
+                item = player.container.get_item(inventory_options[menu_selection])
+                player.container.items.remove(item)
                 if player.slots.is_equipped(item):
                     player.slots.toggle_equip(item)
                 item.x = player.x
@@ -463,6 +464,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
             for dead_entity in dead_entities:
                 if dead_entity == player:
                     message = player.kill(is_player=True)
+                    previous_game_state = GameStates.PLAYER_DEAD
                     game_state = GameStates.PLAYER_DEAD
                 else:
                     message = dead_entity.kill()

@@ -392,8 +392,8 @@ def digging(*args, **kwargs):
         results['recompute_fov'] = True
         results['next_level'] = True
     else:
-        results['use_message'] = Message('The ground collapses beneath {0} collapses.'.format(
-            item.definite_name), libtcod.orange)
+        results['use_message'] = Message('The ground beneath {0} collapses.'.format(target.definite_name),
+                                         libtcod.orange)
         game_map.entities.remove(target)
 
     return results
