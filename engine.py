@@ -1,6 +1,5 @@
 import json
 
-from menu import construct_inventory_options
 from src.color_schemes import ColorSchemes, init_color_schemes
 from src.components.container import Container
 from src.components.fighter import Fighter
@@ -12,6 +11,7 @@ from src.game_messages import MessageLog, Message, join_list
 from src.game_states import GameStates
 from src.input import InputSchemes, handle_mouse
 from src.map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
+from src.menu import construct_inventory_options
 from src.render import render_all, clear_all, RenderOrder
 
 

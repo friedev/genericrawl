@@ -19,7 +19,7 @@ def create_enemy(char, color, name, hp, defense, attack, damage, is_name_proper=
 
 
 def create_sword(name, tier, attack, damage, is_name_proper=False):
-    return create_weapon('(', libtcod.lighter_gray, name, tier, attack, damage, is_name_proper)
+    return create_weapon('/', libtcod.lighter_gray, name, tier, attack, damage, is_name_proper)
 
 
 def create_polearm(name, tier, attack, damage, is_name_proper=False):
@@ -27,7 +27,7 @@ def create_polearm(name, tier, attack, damage, is_name_proper=False):
 
 
 def create_heavy(name, tier, attack, damage, is_name_proper=False):
-    return create_weapon('/', libtcod.dark_gray, name, tier, attack, damage, is_name_proper)
+    return create_weapon('(', libtcod.dark_gray, name, tier, attack, damage, is_name_proper)
 
 
 def create_weapon(char, color, name, tier, attack, damage, is_name_proper=False):
@@ -174,10 +174,11 @@ ITEM_WEIGHTS = {
     EntityTemplates.PLATE_ARMOR:     [0, 0, 0, 0, 0, 0, 1, 2, 1, 0],
     EntityTemplates.LAMELLAR_ARMOR:  [0, 0, 0, 0, 0, 0, 1, 2, 1, 0],
 
-    EntityTemplates.RUNE_HEALING: [8],
-    EntityTemplates.RUNE_PAIN: [4],
-    EntityTemplates.RUNE_MIGHT: [3],
-    EntityTemplates.RUNE_PROTECTION: [3],
+    # The sum of rune weights should be about 18
+    EntityTemplates.RUNE_HEALING: [6],
+    EntityTemplates.RUNE_PAIN: [2],
+    EntityTemplates.RUNE_MIGHT: [2],
+    EntityTemplates.RUNE_PROTECTION: [2],
     EntityTemplates.RUNE_TELEPORTATION: [2],
     EntityTemplates.RUNE_DIGGING: [2],
     EntityTemplates.RUNE_REPLICATION: [2],

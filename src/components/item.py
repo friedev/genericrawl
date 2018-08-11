@@ -1,8 +1,8 @@
 from copy import deepcopy
 
 import libtcodpy as libtcod
-from components.ai import BasicMonster
-from map.dungeon_generator import CAVE_FLOOR
+from src.components.ai import BasicMonster
+from src.map.dungeon_generator import CAVE_FLOOR
 from src.components.slots import SlotTypes
 from src.game_messages import Message
 from src.status_effect import StatusEffect

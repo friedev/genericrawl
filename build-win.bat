@@ -8,3 +8,5 @@ copy options.json dist\engine
 cd dist\engine
 mv engine.exe GeneriCrawl.exe
 mv engine.exe.manifest GeneriCrawl.exe.manifest
+
+cd ..\..
