@@ -1,4 +1,8 @@
+from copy import deepcopy
+
 import libtcodpy as libtcod
+from components.ai import BasicMonster
+from map.dungeon_generator import CAVE_FLOOR
 from src.components.slots import SlotTypes
 from src.game_messages import Message
 from src.status_effect import StatusEffect
@@ -116,12 +120,7 @@ def heal(*args, **kwargs):
     player_using = target == args[0]
 
     if target.fighter.hp == target.fighter.max_hp:
-        if player_using:
-            results['use_message'] = Message('You are already fully healed.', libtcod.yellow)
-        else:
-            results['item_consumed'] = item
-            results['use_message'] = Message('The rune has no effect on {0}.'.format(target.definite_name),
-                                             libtcod.yellow)
+        results['use_message'] = Message('The rune has no effect.', libtcod.yellow)
     else:
         if type(amount) is float:
             actual_amount = int(target.fighter.max_hp * amount)
@@ -326,7 +325,9 @@ def teleportation(*args, **kwargs):
     if combining:
         combine_target = kwargs.get('combine_target')
         x, y = game_map.find_open_tile()
-        return {'item_consumed': item, 'move_item': combine_target, 'target_x': x, 'target_y': y}
+        return {'use_message': Message('{0} suddenly vanishes.'.format(combine_target.definite_name.capitalize()),
+                                       libtcod.yellow), 'item_consumed': item, 'move_item': combine_target,
+                'target_x': x, 'target_y': y}
 
     if not throwing:
         target = args[0]
@@ -348,6 +349,166 @@ def teleportation(*args, **kwargs):
     else:
         results['use_message'] = Message('{0} suddenly vanishes.'.format(target.definite_name.capitalize()),
                                          libtcod.yellow)
+
+    return results
+
+
+def digging(*args, **kwargs):
+    item = args[1]
+    game_map = args[2]
+    combining = kwargs.get('combining')
+    throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        return {'use_message': Message('{0} crumbles into dust.'.format(combine_target.definite_name.capitalize()),
+                                       libtcod.orange), 'item_consumed': [item, combine_target]}
+
+    if game_map.dungeon_level is 10:
+        return {'use_message': Message('The ground is too hard to dig through here.', libtcod.yellow),
+                'item_consumed': item}
+
+    if not throwing:
+        target = args[0]
+    else:
+        target = get_throw_target(game_map, **kwargs)
+        if not target:
+            target_x = kwargs.get('target_x')
+            target_y = kwargs.get('target_y')
+            for x in range(target_x - 1, target_x + 2):
+                for y in range(target_y - 1, target_y + 2):
+                    if game_map.contains(x, y):
+                        game_map.generator.grid[x][y] = CAVE_FLOOR
+
+            return {'use_message': Message('The walls collapse around the {0}.'.format(item.definite_name),
+                                           libtcod.orange), 'item_consumed': item, 'update_fov_map': True,
+                    'recompute_fov': True}
+
+    player_using = target == args[0]
+
+    results = {'item_consumed': item}
+    if player_using:
+        results['use_message'] = Message('A pit opens beneath you!', libtcod.orange)
+        results['recompute_fov'] = True
+        results['next_level'] = True
+    else:
+        results['use_message'] = Message('The ground collapses beneath {0} collapses.'.format(
+            item.definite_name), libtcod.orange)
+        game_map.entities.remove(target)
+
+    return results
+
+
+def replication(*args, **kwargs):
+    item = args[1]
+    game_map = args[2]
+    combining = kwargs.get('combining')
+    throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+        player = args[0]
+        player.container.items.append(deepcopy(combine_target))
+        return {'use_message': Message('{0} morphs into {1}.'.format(item.definite_name.capitalize(),
+                                                                     combine_target.indefinite_name), libtcod.yellow),
+                'item_consumed': item}
+
+    if not throwing:
+        target = args[0]
+    else:
+        target = get_throw_target(game_map, **kwargs)
+        if not target:
+            target_x = kwargs.get('target_x')
+            target_y = kwargs.get('target_y')
+            return {'item_moved': item, 'item_x': target_x, 'item_y': target_y}
+
+    player_using = target == args[0]
+
+    results = {'item_consumed': item}
+    if player_using:
+        clone = deepcopy(target)
+        clone.ai = BasicMonster()
+        clone.ai.owner = clone
+        clone.name = 'clone'
+        clone.container = None
+        clone.fighter.base_max_hp = clone.fighter.max_hp
+        clone.fighter.base_attack = clone.fighter.attack
+        clone.fighter.base_defense = clone.fighter.defense
+        clone.fighter.base_damage = clone.fighter.damage
+        clone.slots = None
+
+        game_map.entities.append(clone)
+        for x in range(target.x - 1, target.x + 2):
+            for y in range(target.y - 1, target.y + 2):
+                if game_map.is_tile_open(x, y):
+                    clone.x = x
+                    clone.y = y
+
+        if clone.x != target.x or clone.y != target.y:
+            results['use_message'] = Message('{0} morphs into a hostile adventurer!'.format(
+                item.definite_name.capitalize()), libtcod.yellow)
+        else:
+            clone.x, clone.y = game_map.find_open_tile()
+            results['use_message'] = Message('You feel a vague familiar presence.', libtcod.yellow)
+    else:
+        clone = deepcopy(target)
+
+        game_map.entities.append(clone)
+        for x in range(target.x - 1, target.x + 2):
+            for y in range(target.y - 1, target.y + 2):
+                if game_map.is_tile_open(x, y):
+                    clone.x = x
+                    clone.y = y
+
+        if clone.x != target.x or clone.y != target.y:
+            results['use_message'] = Message('{0} morphs into {1}!'.format(item.definite_name.capitalize(),
+                                                                           target.indefinite_name), libtcod.yellow)
+        else:
+            clone.x, clone.y = game_map.find_open_tile()
+            results['use_message'] = Message('You feel a vague hostile presence.', libtcod.yellow)
+
+    return results
+
+
+def cancellation(*args, **kwargs):
+    item = args[1]
+    game_map = args[2]
+    combining = kwargs.get('combining')
+    throwing = kwargs.get('throwing')
+
+    if combining:
+        combine_target = kwargs.get('combine_target')
+
+        if combine_target.equipment and combine_target.equipment.enchantments:
+            combine_target.equipment.enchantments = {}
+            combine_target.equipment.n_enchantments = 0
+            return {'use_message': Message('The glow of enchantment fades from {0}.'.format(
+                combine_target.definite_name), libtcod.yellow), 'item_consumed': item}
+
+        return {}
+
+    if not throwing:
+        target = args[0]
+    else:
+        target = get_throw_target(game_map, **kwargs)
+        if not target:
+            target_x = kwargs.get('target_x')
+            target_y = kwargs.get('target_y')
+            return {'item_moved': item, 'item_x': target_x, 'item_y': target_y}
+
+    player_using = target == args[0]
+    if target.status_effects:
+        target.status_effects = {}
+
+        results = {'item_consumed': item}
+        if player_using:
+            results['use_message'] = Message('You feel normal again.', libtcod.yellow)
+        else:
+            results['use_message'] = Message('{0} returns to normal.'.format(target.definite_name.capitalize()),
+                                             libtcod.yellow)
+    else:
+        results = {'item_consumed': item, 'use_message': Message('{0} has no effect.'.format(
+            item.definite_name.capitalize()), libtcod.yellow)}
 
     return results
 

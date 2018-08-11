@@ -109,12 +109,14 @@ class EntityTemplates(Enum):
 
     # Runes
     ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)
-    RUNE_HEALING = create_rune(libtcod.darker_green, 'rune of healing', heal, amount=0.5, weapon_amount=-2,
-                               armor_amount=5)
+    RUNE_HEALING = create_rune(libtcod.green, 'rune of healing', heal, amount=0.5, weapon_amount=-2, armor_amount=5)
     RUNE_PAIN = create_rune(libtcod.red, 'rune of pain', pain, amount=0.5, weapon_amount=2, armor_amount=-5)
     RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=3, duration=10, weapon_amount=1)
     RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=3, duration=10, armor_amount=1)
     RUNE_TELEPORTATION = create_rune(libtcod.magenta, 'rune of teleportation', teleportation)
+    RUNE_DIGGING = create_rune(libtcod.dark_sepia, 'rune of digging', digging)
+    RUNE_REPLICATION = create_rune(libtcod.orange, 'rune of replication', replication)
+    RUNE_CANCELLATION = create_rune(libtcod.darker_gray, 'rune of cancellation', cancellation)
 
 
 def weight_range(value, start, end):
@@ -174,9 +176,12 @@ ITEM_WEIGHTS = {
 
     EntityTemplates.RUNE_HEALING: [8],
     EntityTemplates.RUNE_PAIN: [4],
-    EntityTemplates.RUNE_MIGHT: [2],
-    EntityTemplates.RUNE_PROTECTION: [2],
-    EntityTemplates.RUNE_TELEPORTATION: [2]
+    EntityTemplates.RUNE_MIGHT: [3],
+    EntityTemplates.RUNE_PROTECTION: [3],
+    EntityTemplates.RUNE_TELEPORTATION: [2],
+    EntityTemplates.RUNE_DIGGING: [2],
+    EntityTemplates.RUNE_REPLICATION: [2],
+    EntityTemplates.RUNE_CANCELLATION: [2]
 }
 
 

@@ -445,7 +445,9 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
         new_messages = [attack_message, pickup_message, use_message, effect_message]
 
         recompute_fov = recompute_fov or player_results.get('recompute_fov')
+        update_fov_map = player_results.get('update_fov_map')
         dead_entities = player_results.get('dead')
+        next_level = player_results.get('next_level')
         item_obtained = player_results.get('item_obtained')
         item_moved = player_results.get('item_moved')
         item_consumed = player_results.get('item_consumed') or item_moved
@@ -453,6 +455,9 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
         for message in new_messages:
             if message:
                 message_log.add_message(message)
+
+        if update_fov_map:
+            fov_map = game_map.generate_fov_map()
 
         if dead_entities:
             for dead_entity in dead_entities:
@@ -463,14 +468,34 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                     message = dead_entity.kill()
                 message_log.add_message(message)
 
-        if item_obtained:
+        if next_level:
+            # Partially copied from code under "direction"
+            game_map = GameMap(game_map.dungeon_level + 1)
+
+            player.x, player.y = game_map.find_open_tile()
+            game_map.entities.append(player)
+
+            recompute_fov = True
+            fov_map = game_map.generate_fov_map()
+            memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
+
+            libtcod.console_clear(console)
+
+        if item_obtained and item_obtained in game_map.entities:
             game_map.entities.remove(item_obtained)
 
         if item_consumed or item_moved:
-            player.container.items.remove(item_consumed)
+            if type(item_consumed) is list:
+                for item in item_consumed:
+                    player.container.items.remove(item)
 
-            if player.slots.is_equipped(item_consumed):
-                player.slots.toggle_equip(item_consumed)
+                    if player.slots.is_equipped(item):
+                        player.slots.toggle_equip(item)
+            else:
+                player.container.items.remove(item_consumed)
+
+                if player.slots.is_equipped(item_consumed):
+                    player.slots.toggle_equip(item_consumed)
 
             if item_moved:
                 item_moved.x = player_results.get('item_x')
