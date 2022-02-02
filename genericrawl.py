@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
 import json
+
+import tcod as libtcod
 
 from src.color_schemes import ColorSchemes, init_color_schemes
 from src.components.container import Container
