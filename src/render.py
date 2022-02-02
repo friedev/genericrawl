@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from libtcodpy import Color
+from tcod import Color
 from src.fov import distance
 from src.game_messages import join_list
 from src.game_states import GameStates

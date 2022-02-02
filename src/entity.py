@@ -2,7 +2,7 @@ from copy import deepcopy
 from enum import Enum
 from math import atan2
 
-import libtcodpy as libtcod
+import tcod as libtcod
 from src.fov import distance
 from src.game_messages import Message, join_list
 from src.render import RenderOrder

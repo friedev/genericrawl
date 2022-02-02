@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from math import atan2, cos, pi, sin, sqrt
 
 

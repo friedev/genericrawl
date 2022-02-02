@@ -1,6 +1,6 @@
 from enum import Enum
 
-import libtcodpy as libtcod
+import tcod as libtcod
 from src.game_states import GameStates
 
 

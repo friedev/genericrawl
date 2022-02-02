@@ -1,6 +1,6 @@
 from operator import contains
 
-import libtcodpy as libtcod
+import tcod as libtcod
 from src.game_messages import Message
 
 

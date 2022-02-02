@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-import libtcodpy as libtcod
+import tcod as libtcod
 from src.components.ai import BasicMonster
 from src.map.dungeon_generator import CAVE_FLOOR
 from src.components.slots import SlotTypes

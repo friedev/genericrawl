@@ -1,7 +1,7 @@
 from enum import Enum
 
-import libtcodpy as libtcod
-from libtcodpy import Color
+import tcod as libtcod
+from tcod import Color
 from src.map.tile import Tiles
 
 
