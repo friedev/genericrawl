@@ -364,7 +364,7 @@ def digging(*args, **kwargs):
         return {'use_message': Message('{0} crumbles into dust.'.format(combine_target.definite_name.capitalize()),
                                        libtcod.orange), 'item_consumed': [item, combine_target]}
 
-    if game_map.dungeon_level is 10:
+    if game_map.dungeon_level == 10:
         return {'use_message': Message('The ground is too hard to dig through here.', libtcod.yellow),
                 'item_consumed': item}
 
