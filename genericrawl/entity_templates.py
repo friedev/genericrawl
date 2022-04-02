@@ -1,6 +1,8 @@
 from enum import Enum
 from random import randint
 
+import tcod
+
 from .components.ai import BasicMonster
 from .components.equipment import Equipment
 from .components.fighter import Fighter
@@ -19,15 +21,15 @@ def create_enemy(char, color, name, hp, defense, attack, damage, is_name_proper=
 
 
 def create_sword(name, tier, attack, damage, is_name_proper=False):
-    return create_weapon('/', libtcod.lighter_gray, name, tier, attack, damage, is_name_proper)
+    return create_weapon('/', tcod.lighter_gray, name, tier, attack, damage, is_name_proper)
 
 
 def create_polearm(name, tier, attack, damage, is_name_proper=False):
-    return create_weapon('|', libtcod.darker_orange, name, tier, attack, damage, is_name_proper)
+    return create_weapon('|', tcod.darker_orange, name, tier, attack, damage, is_name_proper)
 
 
 def create_heavy(name, tier, attack, damage, is_name_proper=False):
-    return create_weapon('(', libtcod.dark_gray, name, tier, attack, damage, is_name_proper)
+    return create_weapon('(', tcod.dark_gray, name, tier, attack, damage, is_name_proper)
 
 
 def create_weapon(char, color, name, tier, attack, damage, is_name_proper=False):
@@ -38,11 +40,11 @@ def create_weapon(char, color, name, tier, attack, damage, is_name_proper=False)
 
 
 def create_def_armor(name, tier, defense, hp, is_name_proper=False):
-    return create_armor('}', libtcod.lighter_gray, name, tier, defense, hp, is_name_proper)
+    return create_armor('}', tcod.lighter_gray, name, tier, defense, hp, is_name_proper)
 
 
 def create_hp_armor(name, tier, defense, hp, is_name_proper=False):
-    return create_armor('[', libtcod.darker_orange, name, tier, defense, hp, is_name_proper)
+    return create_armor('[', tcod.darker_orange, name, tier, defense, hp, is_name_proper)
 
 
 def create_armor(char, color, name, tier, defense, hp, is_name_proper=False):
@@ -64,21 +66,21 @@ def create_rune(color, name, rune_function, char='*', is_name_proper=False, comb
 
 class EntityTemplates(Enum):
     # Enemies
-    GOBLIN = create_enemy('g', libtcod.darker_green, 'goblin',      hp=6,  attack=2,  defense=1,  damage=2)
-    KOBOLD = create_enemy('k', libtcod.light_pink, 'kobold',        hp=7,  attack=1,  defense=0,  damage=1)
-    ZOMBIE = create_enemy('z', libtcod.green, 'zombie',             hp=10, attack=1,  defense=2,  damage=1)
-    ORC = create_enemy('o', libtcod.green, 'orc',                   hp=15, attack=3,  defense=3,  damage=4)
-    GNOLL = create_enemy('G', libtcod.dark_orange, 'gnoll',         hp=22, attack=4,  defense=6,  damage=5)
-    SKELETON = create_enemy('s', libtcod.white, 'skeleton',         hp=24, attack=2,  defense=5,  damage=3)
-    SPIDER = create_enemy('S', libtcod.darker_gray, 'spider',       hp=28, attack=8,  defense=5,  damage=9)
-    WEREWOLF = create_enemy('w', libtcod.darker_gray, 'werewolf',   hp=26, attack=6,  defense=5,  damage=6)
-    OGRE = create_enemy('O', libtcod.darker_green, 'ogre',          hp=50, attack=4,  defense=7,  damage=8)
-    WYVERN = create_enemy('W', libtcod.red, 'wyvern',               hp=45, attack=13, defense=7,  damage=14)
-    CYCLOPS = create_enemy('C', libtcod.dark_orange, 'cyclops',     hp=55, attack=9,  defense=10, damage=12)
-    TROLL = create_enemy('T', libtcod.darker_gray, 'troll',         hp=60, attack=7,  defense=12, damage=10)
-    HYDRA = create_enemy('H', libtcod.dark_cyan, 'hydra',           hp=50, attack=18, defense=9,  damage=20)
-    MINOTAUR = create_enemy('M', libtcod.darker_orange, 'minotaur', hp=60, attack=12, defense=12, damage=18)
-    DRAGON = create_enemy('D', libtcod.red, 'dragon',               hp=80, attack=10, defense=20, damage=15)
+    GOBLIN = create_enemy('g', tcod.darker_green, 'goblin',      hp=6,  attack=2,  defense=1,  damage=2)
+    KOBOLD = create_enemy('k', tcod.light_pink, 'kobold',        hp=7,  attack=1,  defense=0,  damage=1)
+    ZOMBIE = create_enemy('z', tcod.green, 'zombie',             hp=10, attack=1,  defense=2,  damage=1)
+    ORC = create_enemy('o', tcod.green, 'orc',                   hp=15, attack=3,  defense=3,  damage=4)
+    GNOLL = create_enemy('G', tcod.dark_orange, 'gnoll',         hp=22, attack=4,  defense=6,  damage=5)
+    SKELETON = create_enemy('s', tcod.white, 'skeleton',         hp=24, attack=2,  defense=5,  damage=3)
+    SPIDER = create_enemy('S', tcod.darker_gray, 'spider',       hp=28, attack=8,  defense=5,  damage=9)
+    WEREWOLF = create_enemy('w', tcod.darker_gray, 'werewolf',   hp=26, attack=6,  defense=5,  damage=6)
+    OGRE = create_enemy('O', tcod.darker_green, 'ogre',          hp=50, attack=4,  defense=7,  damage=8)
+    WYVERN = create_enemy('W', tcod.red, 'wyvern',               hp=45, attack=13, defense=7,  damage=14)
+    CYCLOPS = create_enemy('C', tcod.dark_orange, 'cyclops',     hp=55, attack=9,  defense=10, damage=12)
+    TROLL = create_enemy('T', tcod.darker_gray, 'troll',         hp=60, attack=7,  defense=12, damage=10)
+    HYDRA = create_enemy('H', tcod.dark_cyan, 'hydra',           hp=50, attack=18, defense=9,  damage=20)
+    MINOTAUR = create_enemy('M', tcod.darker_orange, 'minotaur', hp=60, attack=12, defense=12, damage=18)
+    DRAGON = create_enemy('D', tcod.red, 'dragon',               hp=80, attack=10, defense=20, damage=15)
 
     # Weapons
     DAGGER = create_sword('dagger',               tier=1, attack=3,  damage=2)
@@ -108,15 +110,15 @@ class EntityTemplates(Enum):
     LAMELLAR_ARMOR = create_hp_armor('lamellar armor',    tier=8, defense=8,  hp=60)
 
     # Runes
-    ROCK = create_rune(libtcod.darker_gray, 'rock', None, throw_function=throw_std)
-    RUNE_HEALING = create_rune(libtcod.green, 'rune of healing', heal, amount=0.5, weapon_amount=-2, armor_amount=5)
-    RUNE_PAIN = create_rune(libtcod.red, 'rune of pain', pain, amount=0.5, weapon_amount=2, armor_amount=-5)
-    RUNE_MIGHT = create_rune(libtcod.yellow, 'rune of might', might, amount=3, duration=10, weapon_amount=1)
-    RUNE_PROTECTION = create_rune(libtcod.blue, 'rune of protection', protection, amount=3, duration=10, armor_amount=1)
-    RUNE_TELEPORTATION = create_rune(libtcod.magenta, 'rune of teleportation', teleportation)
-    RUNE_DIGGING = create_rune(libtcod.dark_sepia, 'rune of digging', digging)
-    RUNE_REPLICATION = create_rune(libtcod.orange, 'rune of replication', replication)
-    RUNE_CANCELLATION = create_rune(libtcod.darker_gray, 'rune of cancellation', cancellation)
+    ROCK = create_rune(tcod.darker_gray, 'rock', None, throw_function=throw_std)
+    RUNE_HEALING = create_rune(tcod.green, 'rune of healing', heal, amount=0.5, weapon_amount=-2, armor_amount=5)
+    RUNE_PAIN = create_rune(tcod.red, 'rune of pain', pain, amount=0.5, weapon_amount=2, armor_amount=-5)
+    RUNE_MIGHT = create_rune(tcod.yellow, 'rune of might', might, amount=3, duration=10, weapon_amount=1)
+    RUNE_PROTECTION = create_rune(tcod.blue, 'rune of protection', protection, amount=3, duration=10, armor_amount=1)
+    RUNE_TELEPORTATION = create_rune(tcod.magenta, 'rune of teleportation', teleportation)
+    RUNE_DIGGING = create_rune(tcod.dark_sepia, 'rune of digging', digging)
+    RUNE_REPLICATION = create_rune(tcod.orange, 'rune of replication', replication)
+    RUNE_CANCELLATION = create_rune(tcod.darker_gray, 'rune of cancellation', cancellation)
 
 
 def weight_range(value, start, end):

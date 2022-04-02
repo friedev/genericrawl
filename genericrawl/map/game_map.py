@@ -1,3 +1,5 @@
+import tcod
+
 from ..components.item import *
 from ..entity_templates import ENEMY_WEIGHTS, weighted_choice, get_weights_for_level, ITEM_WEIGHTS
 from .dungeon_generator import *
@@ -269,11 +271,11 @@ class GameMap:
             self.entities.append(item)
 
     def generate_fov_map(self):
-        fov_map = libtcod.map_new(self.width, self.height)
+        fov_map = tcod.map_new(self.width, self.height)
 
         for x in range(self.width):
             for y in range(self.height):
-                libtcod.map_set_properties(fov_map, x, y, not self.get_tile(x, y).blocks_sight,
+                tcod.map_set_properties(fov_map, x, y, not self.get_tile(x, y).blocks_sight,
                                            not self.get_tile(x, y).blocks)
 
         return fov_map
@@ -283,7 +285,7 @@ class GameMap:
 
         for entity in self.entities:
             if entity.blocks and entity not in exclude:
-                libtcod.map_set_properties(fov_map, entity.x, entity.y, True, False)
+                tcod.map_set_properties(fov_map, entity.x, entity.y, True, False)
 
         return fov_map
 

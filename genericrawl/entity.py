@@ -2,7 +2,8 @@ from copy import deepcopy
 from enum import Enum
 from math import atan2
 
-import tcod as libtcod
+import tcod
+
 from .fov import distance
 from .game_messages import Message, join_list
 from .render import RenderOrder
@@ -105,7 +106,7 @@ class Entity:
 
         if expired:
             return {'effect_message': Message('You are no longer {0}.'.format(
-                join_list([effect.name for effect in expired])), libtcod.yellow)}
+                join_list([effect.name for effect in expired])), tcod.yellow)}
 
         return {}
 
@@ -116,12 +117,12 @@ class Entity:
 
     def kill(self, is_player=False):
         self.char = '%'
-        self.color = libtcod.dark_red
+        self.color = tcod.dark_red
 
         if is_player:
-            death_message = Message('You die...', libtcod.red)
+            death_message = Message('You die...', tcod.red)
         else:
-            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), libtcod.green)
+            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), tcod.green)
             self.render_order = RenderOrder.CORPSE
 
         if self.is_name_proper:

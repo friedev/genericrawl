@@ -1,5 +1,6 @@
 from math import radians
 from random import randint
+
 from ..fov import *
 
 

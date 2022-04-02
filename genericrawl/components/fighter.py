@@ -1,5 +1,6 @@
-import tcod as libtcod
 from random import random, getrandbits, randint
+
+import tcod
 
 from ..game_messages import Message
 
@@ -89,20 +90,20 @@ class Fighter:
 
         if not attack_hit:
             return {'attack_message': Message("{0} blocks {1}'s attack.".format(target.owner.definite_name.capitalize(),
-                    self.owner.definite_name), libtcod.light_gray)}
+                    self.owner.definite_name), tcod.light_gray)}
 
         if self.damage <= 0:
             return {'attack_message': Message('{0} attacks {1} but does no damage.'.format(
-                self.owner.definite_name.capitalize(), target.owner.definite_name), libtcod.light_gray)}
+                self.owner.definite_name.capitalize(), target.owner.definite_name), tcod.light_gray)}
 
         results = target.take_damage(self.damage)
 
         if is_player:
-            color = libtcod.green
+            color = tcod.green
         elif target_is_player:
-            color = libtcod.red
+            color = tcod.red
         else:
-            color = libtcod.white
+            color = tcod.white
 
         results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
             self.owner.definite_name.capitalize(), target.owner.definite_name, results.get('damage')), color)

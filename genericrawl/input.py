@@ -1,6 +1,6 @@
 from enum import Enum
 
-import tcod as libtcod
+import tcod
 from .game_states import GameStates
 
 
@@ -80,13 +80,13 @@ GLOBAL = InputScheme('Global',
     {
         None: KeyMap(
             {
-                libtcod.KEY_UP: NORTH,
-                libtcod.KEY_DOWN: SOUTH,
-                libtcod.KEY_LEFT: WEST,
-                libtcod.KEY_RIGHT: EAST,
-                libtcod.KEY_ENTER: {'select': True},
-                libtcod.KEY_F11: {'fullscreen': True},
-                libtcod.KEY_ESCAPE: {'exit': True}
+                tcod.KEY_UP: NORTH,
+                tcod.KEY_DOWN: SOUTH,
+                tcod.KEY_LEFT: WEST,
+                tcod.KEY_RIGHT: EAST,
+                tcod.KEY_ENTER: {'select': True},
+                tcod.KEY_F11: {'fullscreen': True},
+                tcod.KEY_ESCAPE: {'exit': True}
             },
             {
                 'i': {'inventory': True},
@@ -132,7 +132,7 @@ class InputSchemes(Enum):
     {
         None: KeyMap(
             {
-                libtcod.KEY_TAB: {'inventory': True}
+                tcod.KEY_TAB: {'inventory': True}
             },
             {
                 'q': NORTHWEST,
@@ -173,19 +173,19 @@ class InputSchemes(Enum):
     {
         None: KeyMap(
             {
-                libtcod.KEY_KP1: SOUTHWEST,
-                libtcod.KEY_KP2: SOUTH,
-                libtcod.KEY_KP3: SOUTHEAST,
-                libtcod.KEY_KP4: WEST,
-                libtcod.KEY_KP6: EAST,
-                libtcod.KEY_KP7: NORTHWEST,
-                libtcod.KEY_KP8: NORTH,
-                libtcod.KEY_KP9: NORTHEAST
+                tcod.KEY_KP1: SOUTHWEST,
+                tcod.KEY_KP2: SOUTH,
+                tcod.KEY_KP3: SOUTHEAST,
+                tcod.KEY_KP4: WEST,
+                tcod.KEY_KP6: EAST,
+                tcod.KEY_KP7: NORTHWEST,
+                tcod.KEY_KP8: NORTH,
+                tcod.KEY_KP9: NORTHEAST
             },
             {}),
         GameStates.PLAYER_TURN: KeyMap(
             {
-                libtcod.KEY_KP5: {'wait': True}
+                tcod.KEY_KP5: {'wait': True}
             },
             {})
     })

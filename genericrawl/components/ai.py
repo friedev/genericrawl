@@ -1,5 +1,6 @@
-import tcod as libtcod
 from random import randint
+
+import tcod
 
 
 class BasicMonster:
@@ -25,8 +26,8 @@ class BasicMonster:
             player_y = player.y
 
             if given_fov_map:
-                libtcod.map_set_properties(fov_map, owner_x, owner_y, True, True)
-                libtcod.map_set_properties(fov_map, player_x, player_y, True, True)
+                tcod.map_set_properties(fov_map, owner_x, owner_y, True, True)
+                tcod.map_set_properties(fov_map, player_x, player_y, True, True)
             else:
                 # This second variable is necessary as creating another variable called fov_map might shadow the
                 # parameter rather than changing its value
@@ -38,7 +39,7 @@ class BasicMonster:
 
             if has_los is None:
                 self.owner.sight.get_fov(fov_map)
-                has_los = libtcod.map_is_in_fov(fov_map, owner_x, owner_y)
+                has_los = tcod.map_is_in_fov(fov_map, owner_x, owner_y)
 
             if has_los:
                 # If the entity can see the player, reset the chase timer
@@ -53,11 +54,11 @@ class BasicMonster:
 
             if chase:
                 # 1.41 approximates sqrt(2), the cost of a diagonal moves
-                path = libtcod.path_new_using_map(fov_map, 1.41)
-                libtcod.path_compute(path, owner_x, owner_y, player_x, player_y)
+                path = tcod.path_new_using_map(fov_map, 1.41)
+                tcod.path_compute(path, owner_x, owner_y, player_x, player_y)
 
-                if not libtcod.path_is_empty(path) and libtcod.path_size(path) < 25:
-                    x, y = libtcod.path_walk(path, True)
+                if not tcod.path_is_empty(path) and tcod.path_size(path) < 25:
+                    x, y = tcod.path_walk(path, True)
                     if x or y:
                         self.owner.move_to(x, y, game_map, face=True)
                 else:
@@ -70,23 +71,23 @@ class BasicMonster:
                     if game_map.is_tile_open(owner_x + dx, owner_y + dy):
                         self.owner.move(dx, dy, game_map)
 
-                libtcod.path_delete(path)
+                tcod.path_delete(path)
 
             if given_fov_map:
-                libtcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
-                libtcod.map_set_properties(fov_map, player.x, player.y, True, False)
+                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
+                tcod.map_set_properties(fov_map, player.x, player.y, True, False)
             else:
-                libtcod.map_delete(fov_map)
+                tcod.map_delete(fov_map)
         else:
             if given_fov_map:
                 # Remove the entity from the given FOV map
-                libtcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, True)
+                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, True)
 
             # Wander around aimlessly
             self.owner.move(randint(-1, 1), randint(-1, 1), game_map)
 
             if given_fov_map:
                 # Add the entity to the given FOV map
-                libtcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
+                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
 
         return results

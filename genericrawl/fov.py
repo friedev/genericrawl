@@ -1,5 +1,6 @@
-import tcod as libtcod
 from math import atan2, cos, pi, sin, sqrt
+
+import tcod
 
 
 def distance(x1, y1, x2, y2):
@@ -9,13 +10,13 @@ def distance(x1, y1, x2, y2):
 
 
 def compute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0, memory=None):
-    libtcod.map_compute_fov(fov_map, x, y, radius, light_walls, algorithm)
+    tcod.map_compute_fov(fov_map, x, y, radius, light_walls, algorithm)
 
     if memory is not None:
         # Must use "is not None" because [] also evaluates to False
         for xi in range(x - radius, x + radius):
             for yi in range(y - radius, y + radius):
-                if libtcod.map_is_in_fov(fov_map, xi, yi):
+                if tcod.map_is_in_fov(fov_map, xi, yi):
                     memory[xi][yi] = True
 
 
@@ -40,18 +41,18 @@ def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, alg
 
     for xi in range(x - radius, x + radius):
         for yi in range(y - radius, y + radius):
-            if libtcod.map_is_in_fov(fov_map, xi, yi):
+            if tcod.map_is_in_fov(fov_map, xi, yi):
                 x_rel = xi - x
                 y_rel = yi - y
                 tile_angle = atan2(y_rel, x_rel)
 
                 if swap_angles == (lesser_angle <= tile_angle <= greater_angle):
-                    libtcod.map_set_in_fov(fov_map, xi, yi, False)
+                    tcod.map_set_in_fov(fov_map, xi, yi, False)
                 elif memory is not None:
                     # Must use "is not None" because [] also evaluates to False
                     memory[xi][yi] = True
 
-    libtcod.map_set_in_fov(fov_map, x, y, True)
+    tcod.map_set_in_fov(fov_map, x, y, True)
     memory[x][y] = True
 
     if reveal_sides:
@@ -83,8 +84,8 @@ def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, alg
             right_x = -facing_x
             right_y = facing_y
 
-        libtcod.map_set_in_fov(fov_map, x + left_x, y + left_y, True)
-        libtcod.map_set_in_fov(fov_map, x + right_x, y + right_y, True)
+        tcod.map_set_in_fov(fov_map, x + left_x, y + left_y, True)
+        tcod.map_set_in_fov(fov_map, x + right_x, y + right_y, True)
 
         memory[x + left_x][y + left_y] = True
         memory[x + right_x][y + right_y] = True

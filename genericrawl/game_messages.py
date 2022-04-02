@@ -1,6 +1,6 @@
-import tcod as libtcod
-
 import textwrap
+
+import tcod
 
 
 def join_list(terms):
@@ -14,7 +14,7 @@ def join_list(terms):
 
 
 class Message:
-    def __init__(self, text, color=libtcod.white):
+    def __init__(self, text, color=tcod.white):
         self.text = text
         self.color = color
 

@@ -2,7 +2,7 @@ import json
 from os import environ, makedirs, path
 import importlib.resources
 
-import tcod as libtcod
+import tcod
 
 from .color_schemes import ColorSchemes, init_color_schemes
 from .components.container import Container
@@ -73,7 +73,7 @@ def cycle_scheme(scheme, scheme_enum, direction_input):
 
 
 def get_look_message(x, y, game_map, fov_map, player):
-    if libtcod.map_is_in_fov(fov_map, x, y):
+    if tcod.map_is_in_fov(fov_map, x, y):
         entity_list = game_map.get_entities_at_tile(x, y)
 
         if player in entity_list:
@@ -81,7 +81,7 @@ def get_look_message(x, y, game_map, fov_map, player):
 
         if len(entity_list) > 0:
             entity_names = join_list([entity.indefinite_name for entity in entity_list])
-            return Message('You see ' + entity_names + '.', libtcod.light_gray)
+            return Message('You see ' + entity_names + '.', tcod.light_gray)
 
     return None
 
@@ -112,10 +112,10 @@ def main():
     message_height = panel_height - 1
 
     with importlib.resources.as_file(importlib.resources.files('genericrawl.data').joinpath('arial10x10.png')) as font_path:
-        libtcod.console_set_custom_font(str(font_path), libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
-    libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
-    console = libtcod.console_new(screen_width, screen_height)
-    panel = libtcod.console_new(panel_width, panel_height)
+        tcod.console_set_custom_font(str(font_path), tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD)
+    tcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
+    console = tcod.console_new(screen_width, screen_height)
+    panel = tcod.console_new(panel_width, panel_height)
     message_log = MessageLog(message_x, message_width, message_height)
 
     restart = True
@@ -142,7 +142,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
     player_fighter = Fighter(hp=20, defense=1, attack=1, damage=2)
     player_slots = Slots()
     player_container = Container(20)
-    player = Entity(*player_tile, player_char, libtcod.white, 'player', render_order=RenderOrder.PLAYER,
+    player = Entity(*player_tile, player_char, tcod.white, 'player', render_order=RenderOrder.PLAYER,
                     components={'sight': player_sight, 'fighter': player_fighter, 'slots': player_slots,
                                 'container': player_container})
 
@@ -152,8 +152,8 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
     fov_map = game_map.generate_fov_map()
     memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
 
-    key = libtcod.Key()
-    mouse = libtcod.Mouse()
+    key = tcod.Key()
+    mouse = tcod.Mouse()
 
     game_state = GameStates.PLAYER_TURN
     previous_game_state = game_state
@@ -168,15 +168,15 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
     throwing = None
     exit_queued = False
 
-    while not libtcod.console_is_window_closed():
+    while not tcod.console_is_window_closed():
         if recompute_fov:
             player.sight.get_fov(fov_map, memory)
 
         render_all(console, panel, bar_width, message_log, game_map, player, fov_map, memory, color_scheme.value,
                    game_state, mouse, menu_selection, key_cursor if game_state is GameStates.TARGETING else None,
                    inventory_options, viewing_map)
-        libtcod.console_flush()
-        libtcod.sys_wait_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse, True)
+        tcod.console_flush()
+        tcod.sys_wait_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse, True)
         clear_all(console, game_map.entities, player)
 
         recompute_fov = False
@@ -212,7 +212,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
         do_target = False
 
         if left_click and game_state is GameStates.TARGETING:
-            key_cursor = get_mouse_tile(libtcod.console_get_width(console), libtcod.console_get_height(
+            key_cursor = get_mouse_tile(tcod.console_get_width(console), tcod.console_get_height(
                 console), player.x, player.y, *left_click)
             do_target = True
 
@@ -222,7 +222,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 throwing = None
                 looking = False
             else:
-                mouse_tile = get_mouse_tile(libtcod.console_get_width(console), libtcod.console_get_height(
+                mouse_tile = get_mouse_tile(tcod.console_get_width(console), tcod.console_get_height(
                     console), player.x, player.y, *right_click)
                 look_message = get_look_message(*mouse_tile, game_map, fov_map, player)
                 if look_message:
@@ -244,7 +244,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                         entities_at_tile.remove(player)
                         if entities_at_tile:
                             message_log.add_message(Message('You see {0}.'.format(join_list([
-                                entity.indefinite_name for entity in entities_at_tile])), libtcod.light_gray))
+                                entity.indefinite_name for entity in entities_at_tile])), tcod.light_gray))
                         # moved = True
                     else:
                         blocking_entities = game_map.get_entities_at_tile(player.x + dx, player.y + dy, True)
@@ -276,7 +276,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                                 memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
                                 player_acted = False
 
-                                libtcod.console_clear(console)
+                                tcod.console_clear(console)
 
                 # In the event that the player moves into a wall, do not adjust facing
                 # if face and (not move or moved):
@@ -328,7 +328,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                     player_acted = True
                     break
             else:
-                message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
+                message_log.add_message(Message('There is nothing here to pick up.', tcod.yellow))
 
         if drop and game_state is GameStates.INVENTORY:
             if menu_selection < len(inventory_options):
@@ -339,7 +339,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 item.x = player.x
                 item.y = player.y
                 game_map.entities.append(item)
-                message_log.add_message(Message('You drop {0}.'.format(item.definite_name), libtcod.light_blue))
+                message_log.add_message(Message('You drop {0}.'.format(item.definite_name), tcod.light_blue))
                 player_acted = True
 
         if use and game_state is GameStates.INVENTORY:
@@ -361,14 +361,14 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 game_state = GameStates.TARGETING
                 key_cursor = (player.x, player.y)
                 message_log.add_message(Message(
-                    'Left-click or navigate to a tile to throw. Right-click or escape to cancel.', libtcod.light_gray))
+                    'Left-click or navigate to a tile to throw. Right-click or escape to cancel.', tcod.light_gray))
 
         if look and game_state is not GameStates.TARGETING:
             previous_game_state = game_state
             game_state = GameStates.TARGETING
             looking = True
             key_cursor = (player.x, player.y)
-            message_log.add_message(Message('Select a tile to look at. Escape to cancel.', libtcod.light_gray))
+            message_log.add_message(Message('Select a tile to look at. Escape to cancel.', tcod.light_gray))
 
         if wait and game_state is GameStates.PLAYER_TURN:
             if viewing_map:
@@ -393,20 +393,20 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                 return False
             else:
                 exit_queued = True
-                message_log.add_message(Message('Press escape again to quit the game.', libtcod.light_gray))
+                message_log.add_message(Message('Press escape again to quit the game.', tcod.light_gray))
 
         if fullscreen:
-            libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+            tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
 
         if color_scheme_input:
             color_scheme = cycle_scheme(color_scheme, ColorSchemes, color_scheme_input)
             options['color_scheme'] = color_scheme.value.name
-            message_log.add_message(Message('Color Scheme: ' + color_scheme.value.name, libtcod.light_gray))
+            message_log.add_message(Message('Color Scheme: ' + color_scheme.value.name, tcod.light_gray))
 
         if input_scheme_input:
             input_scheme = cycle_scheme(input_scheme, InputSchemes, input_scheme_input)
             options['input_scheme'] = input_scheme.value.name
-            message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, libtcod.light_gray))
+            message_log.add_message(Message('Input Scheme: ' + input_scheme.value.name, tcod.light_gray))
 
         # Process actions with multiple triggers
         if do_use:
@@ -417,7 +417,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
 
         if combine_target:
             if combining is combine_target:
-                message_log.add_message(Message('An item cannot be combined with itself.', libtcod.yellow))
+                message_log.add_message(Message('An item cannot be combined with itself.', tcod.yellow))
             else:
                 result = None
                 if combining.item.combine_function:
@@ -434,7 +434,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                         player_results.update(result)
                         player_acted = True
                     else:
-                        message_log.add_message(Message('These items cannot be combined.', libtcod.yellow))
+                        message_log.add_message(Message('These items cannot be combined.', tcod.yellow))
 
             combining = None
             game_state = previous_game_state
@@ -446,7 +446,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
                     message_log.add_message(look_message)
                 game_state = previous_game_state
                 looking = False
-            elif throwing and (player.x, player.y) != key_cursor and libtcod.map_is_in_fov(fov_map, *key_cursor) and \
+            elif throwing and (player.x, player.y) != key_cursor and tcod.map_is_in_fov(fov_map, *key_cursor) and \
                     game_map.is_tile_open(*key_cursor, check_entities=False):
                 if player.slots.is_equipped(throwing):
                     player.slots.toggle_equip(throwing)
@@ -507,7 +507,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
             fov_map = game_map.generate_fov_map()
             memory = [[False for y in range(game_map.height)] for x in range(game_map.width)]
 
-            libtcod.console_clear(console)
+            tcod.console_clear(console)
 
         if item_obtained and item_obtained in game_map.entities:
             game_map.entities.remove(item_obtained)
@@ -540,7 +540,7 @@ def play_game(console, panel, bar_width, message_log, options, viewing_map=False
             for entity in game_map.entities:
                 if entity.ai:
                     enemy_results = entity.ai.act(game_map, player, enemy_fov_map,
-                                                  libtcod.map_is_in_fov(fov_map, entity.x, entity.y))
+                                                  tcod.map_is_in_fov(fov_map, entity.x, entity.y))
 
                     # Process enemy turn results
                     attack_message = enemy_results.get('attack_message')
