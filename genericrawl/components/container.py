@@ -1,7 +1,7 @@
 from operator import contains
 
 import tcod as libtcod
-from src.game_messages import Message
+from ..game_messages import Message
 
 
 class Container:

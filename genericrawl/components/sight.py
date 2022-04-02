@@ -1,6 +1,6 @@
 from math import radians
 from random import randint
-from src.fov import *
+from ..fov import *
 
 
 def generate_facing():

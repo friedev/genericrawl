@@ -1,6 +1,6 @@
 from enum import Enum
 
-from src.map.dungeon_generator import *
+from .dungeon_generator import *
 
 
 class Tile:

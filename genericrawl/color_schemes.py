@@ -2,7 +2,7 @@ from enum import Enum
 
 import tcod as libtcod
 from tcod import Color
-from src.map.tile import Tiles
+from .map.tile import Tiles
 
 
 def generate_tile_dict(room_floor, room_wall, corridor_floor, corridor_wall, cave_floor, cave_wall, door, room_stairs,

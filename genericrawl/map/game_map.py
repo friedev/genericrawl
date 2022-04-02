@@ -1,7 +1,7 @@
-from src.components.item import *
-from src.entity_templates import ENEMY_WEIGHTS, weighted_choice, get_weights_for_level, ITEM_WEIGHTS
-from src.map.dungeon_generator import *
-from src.map.tile import int_to_tile_map, Tiles
+from ..components.item import *
+from ..entity_templates import ENEMY_WEIGHTS, weighted_choice, get_weights_for_level, ITEM_WEIGHTS
+from .dungeon_generator import *
+from .tile import int_to_tile_map, Tiles
 
 
 def generate_dungeon(**kwargs):

@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 import tcod as libtcod
-from src.components.ai import BasicMonster
-from src.map.dungeon_generator import CAVE_FLOOR
-from src.components.slots import SlotTypes
-from src.game_messages import Message
-from src.status_effect import StatusEffect
+from .ai import BasicMonster
+from ..map.dungeon_generator import CAVE_FLOOR
+from .slots import SlotTypes
+from ..game_messages import Message
+from ..status_effect import StatusEffect
 
 
 def get_throw_target(game_map, **kwargs):

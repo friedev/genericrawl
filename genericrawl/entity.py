@@ -3,9 +3,9 @@ from enum import Enum
 from math import atan2
 
 import tcod as libtcod
-from src.fov import distance
-from src.game_messages import Message, join_list
-from src.render import RenderOrder
+from .fov import distance
+from .game_messages import Message, join_list
+from .render import RenderOrder
 
 
 class Components(Enum):

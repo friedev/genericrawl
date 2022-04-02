@@ -1,10 +1,10 @@
 from enum import Enum, auto
 
 from tcod import Color
-from src.fov import distance
-from src.game_messages import join_list
-from src.game_states import GameStates
-from src.menu import *
+from .fov import distance
+from .game_messages import join_list
+from .game_states import GameStates
+from .menu import *
 
 
 class RenderOrder(Enum):

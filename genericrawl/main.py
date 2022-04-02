@@ -1,21 +1,39 @@
-#!/usr/bin/env python3
 import json
+from os import environ, makedirs, path
+import importlib.resources
 
 import tcod as libtcod
 
-from src.color_schemes import ColorSchemes, init_color_schemes
-from src.components.container import Container
-from src.components.fighter import Fighter
-from src.components.sight import Sight
-from src.components.slots import Slots
-from src.entity import Entity
-from src.fov import *
-from src.game_messages import MessageLog, Message, join_list
-from src.game_states import GameStates
-from src.input import InputSchemes, handle_mouse
-from src.map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
-from src.menu import construct_inventory_options
-from src.render import render_all, clear_all, RenderOrder
+from .color_schemes import ColorSchemes, init_color_schemes
+from .components.container import Container
+from .components.fighter import Fighter
+from .components.sight import Sight
+from .components.slots import Slots
+from .entity import Entity
+from .fov import *
+from .game_messages import MessageLog, Message, join_list
+from .game_states import GameStates
+from .input import InputSchemes, handle_mouse
+from .map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
+from .menu import construct_inventory_options
+from .render import render_all, clear_all, RenderOrder
+
+
+# Based on: https://stackoverflow.com/a/53222876
+CONFIG_DIR = path.join(
+    environ.get('APPDATA')
+    or environ.get('XDG_CONFIG_HOME')
+    or path.join(os.environ['HOME'], '.config'),
+    'genericrawl'
+)
+OPTIONS_PATH = path.join(CONFIG_DIR, 'options.json')
+
+DEFAULT_OPTIONS = {
+    'screen_width': 128,
+    'screen_height': 72,
+    'color_scheme': 'Classic',
+    'input_scheme': 'VI (hjklyubn)',
+}
 
 
 def get_mouse_tile(console_width, console_height, player_x, player_y, mouse_x, mouse_y):
@@ -69,8 +87,11 @@ def get_look_message(x, y, game_map, fov_map, player):
 
 
 def main():
-    with open('options.json') as option_file:
-        options = json.load(option_file)
+    if path.exists(OPTIONS_PATH):
+        with open(OPTIONS_PATH) as option_file:
+            options = json.load(option_file)
+    else:
+        options = DEFAULT_OPTIONS
 
     init_color_schemes()
 
@@ -90,7 +111,8 @@ def main():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    with importlib.resources.as_file(importlib.resources.files('genericrawl.data').joinpath('arial10x10.png')) as font_path:
+        libtcod.console_set_custom_font(str(font_path), libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(screen_width, screen_height, 'GeneriCrawl', False)
     console = libtcod.console_new(screen_width, screen_height)
     panel = libtcod.console_new(panel_width, panel_height)
@@ -100,7 +122,8 @@ def main():
     while restart:
         restart = play_game(console, panel, bar_width, message_log, options)
 
-    with open('options.json', 'w') as option_file:
+    makedirs(CONFIG_DIR, exist_ok=True)
+    with open(OPTIONS_PATH, 'w') as option_file:
         json.dump(options, option_file)
 
 
