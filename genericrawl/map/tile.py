@@ -18,7 +18,7 @@ class Tile:
             self.blocks_sight = blocks_sight
 
         if character is None:
-            character = '#' if blocks else '.'
+            character = "#" if blocks else "."
 
         self.character = character
 
@@ -30,20 +30,20 @@ class Tiles(Enum):
     CORRIDOR_WALL = Tile(True)
     CAVE_FLOOR = Tile(False)
     CAVE_WALL = Tile(True)
-    DOOR = Tile(False, True, '+')
-    ROOM_STAIRS = Tile(True, False, '>')
-    CAVE_STAIRS = Tile(True, False, '>')
+    DOOR = Tile(False, True, "+")
+    ROOM_STAIRS = Tile(True, False, ">")
+    CAVE_STAIRS = Tile(True, False, ">")
 
 
 int_to_tile_map = {
-    EMPTY:          Tiles.CAVE_WALL,
-    ROOM_FLOOR:     Tiles.ROOM_FLOOR,
+    EMPTY: Tiles.CAVE_WALL,
+    ROOM_FLOOR: Tiles.ROOM_FLOOR,
     CORRIDOR_FLOOR: Tiles.CORRIDOR_FLOOR,
-    DOOR:           Tiles.DOOR,
-    DEADEND:        Tiles.CORRIDOR_FLOOR,
-    ROOM_WALL:      Tiles.ROOM_WALL,
-    CORRIDOR_WALL:  Tiles.CORRIDOR_WALL,
-    CAVE_WALL:      Tiles.CAVE_WALL,
-    CAVE_FLOOR:     Tiles.CAVE_FLOOR,
-    STAIRS:         Tiles.ROOM_STAIRS
+    DOOR: Tiles.DOOR,
+    DEADEND: Tiles.CORRIDOR_FLOOR,
+    ROOM_WALL: Tiles.ROOM_WALL,
+    CORRIDOR_WALL: Tiles.CORRIDOR_WALL,
+    CAVE_WALL: Tiles.CAVE_WALL,
+    CAVE_FLOOR: Tiles.CAVE_FLOOR,
+    STAIRS: Tiles.ROOM_STAIRS,
 }

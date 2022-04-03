@@ -6,10 +6,12 @@ import tcod
 def distance(x1, y1, x2, y2):
     dx = x1 - x2
     dy = y1 - y2
-    return sqrt(dx ** 2 + dy ** 2)
+    return sqrt(dx**2 + dy**2)
 
 
-def compute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0, memory=None):
+def compute_fov(
+    fov_map, x, y, radius, light_walls=True, algorithm=0, memory=None
+):
     tcod.map_compute_fov(fov_map, x, y, radius, light_walls, algorithm)
 
     if memory is not None:
@@ -20,8 +22,18 @@ def compute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0, memory=Non
                     memory[xi][yi] = True
 
 
-def compute_fov_angled(fov_map, x, y, radius, angle, span, light_walls=True, algorithm=0, memory=None,
-                       reveal_sides=True):
+def compute_fov_angled(
+    fov_map,
+    x,
+    y,
+    radius,
+    angle,
+    span,
+    light_walls=True,
+    algorithm=0,
+    memory=None,
+    reveal_sides=True,
+):
     compute_fov(fov_map, x, y, radius, light_walls, algorithm)
 
     angle1 = angle - span / 2.0

@@ -4,12 +4,12 @@ import tcod
 
 
 def join_list(terms):
-    terms = ', '.join(terms)
-    terms = terms.rsplit(',', 1)
+    terms = ", ".join(terms)
+    terms = terms.rsplit(",", 1)
     if len(terms) > 2:
-        terms = ', and'.join(terms)
+        terms = ", and".join(terms)
     else:
-        terms = ' and'.join(terms)
+        terms = " and".join(terms)
     return terms
 
 

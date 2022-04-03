@@ -10,13 +10,13 @@ from .render import RenderOrder
 
 
 class Components(Enum):
-    SIGHT = 'sight'
-    FIGHTER = 'fighter'
-    SLOTS = 'slots'
-    AI = 'ai'
-    ITEM = 'item'
-    EQUIPMENT = 'equipment'
-    CONTAINER = 'container'
+    SIGHT = "sight"
+    FIGHTER = "fighter"
+    SLOTS = "slots"
+    AI = "ai"
+    ITEM = "item"
+    EQUIPMENT = "equipment"
+    CONTAINER = "container"
 
 
 class Entity:
@@ -24,8 +24,19 @@ class Entity:
     A generic object to represent players, enemies, items, etc.
     """
 
-    def __init__(self, x, y, char, color, name, is_name_proper=False, blocks=True, render_order=RenderOrder.CORPSE,
-                 components={}, status_effects={}):
+    def __init__(
+        self,
+        x,
+        y,
+        char,
+        color,
+        name,
+        is_name_proper=False,
+        blocks=True,
+        render_order=RenderOrder.CORPSE,
+        components={},
+        status_effects={},
+    ):
         self.x = x
         self.y = y
         self.char = char
@@ -47,7 +58,7 @@ class Entity:
         if self.is_name_proper:
             return self.name
         else:
-            return 'the ' + self.name
+            return "the " + self.name
 
     @property
     def indefinite_name(self):
@@ -55,10 +66,10 @@ class Entity:
             return self.name
         else:
             # Chooses the right indefinite article if the name starts with a vowel
-            if self.name[0].lower() in 'aeiou':
-                return 'an ' + self.name
+            if self.name[0].lower() in "aeiou":
+                return "an " + self.name
             else:
-                return 'a ' + self.name
+                return "a " + self.name
 
     def update_components_owner(self):
         for component in self.components.values():
@@ -105,8 +116,14 @@ class Entity:
                 expired.remove(effect)
 
         if expired:
-            return {'effect_message': Message('You are no longer {0}.'.format(
-                join_list([effect.name for effect in expired])), tcod.yellow)}
+            return {
+                "effect_message": Message(
+                    "You are no longer {0}.".format(
+                        join_list([effect.name for effect in expired])
+                    ),
+                    tcod.yellow,
+                )
+            }
 
         return {}
 
@@ -116,19 +133,21 @@ class Entity:
                 return effect
 
     def kill(self, is_player=False):
-        self.char = '%'
+        self.char = "%"
         self.color = tcod.dark_red
 
         if is_player:
-            death_message = Message('You die...', tcod.red)
+            death_message = Message("You die...", tcod.red)
         else:
-            death_message = Message('{0} dies!'.format(self.definite_name.capitalize()), tcod.green)
+            death_message = Message(
+                "{0} dies!".format(self.definite_name.capitalize()), tcod.green
+            )
             self.render_order = RenderOrder.CORPSE
 
         if self.is_name_proper:
             self.name = self.name + "'s corpse"
         else:
-            self.name = self.name + ' corpse'
+            self.name = self.name + " corpse"
 
         if not is_player:
             self.blocks = False

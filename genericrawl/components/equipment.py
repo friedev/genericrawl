@@ -1,6 +1,15 @@
 class Equipment:
-    def __init__(self, slot, tier=1, max_hp_bonus=0, attack_bonus=0, defense_bonus=0, damage_bonus=0, enchantments={},
-                 n_enchantments=0):
+    def __init__(
+        self,
+        slot,
+        tier=1,
+        max_hp_bonus=0,
+        attack_bonus=0,
+        defense_bonus=0,
+        damage_bonus=0,
+        enchantments={},
+        n_enchantments=0,
+    ):
         self.slot = slot
         self.tier = tier
         self.base_max_hp_bonus = max_hp_bonus
@@ -14,7 +23,7 @@ class Equipment:
     def max_hp_bonus(self):
         bonus = 0
 
-        enchantment = self.enchantments.get('max_hp_bonus')
+        enchantment = self.enchantments.get("max_hp_bonus")
         if enchantment:
             bonus += enchantment
 
@@ -24,7 +33,7 @@ class Equipment:
     def attack_bonus(self):
         bonus = 0
 
-        enchantment = self.enchantments.get('attack_bonus')
+        enchantment = self.enchantments.get("attack_bonus")
         if enchantment:
             bonus += enchantment
 
@@ -34,7 +43,7 @@ class Equipment:
     def defense_bonus(self):
         bonus = 0
 
-        enchantment = self.enchantments.get('defense_bonus')
+        enchantment = self.enchantments.get("defense_bonus")
         if enchantment:
             bonus += enchantment
 
@@ -44,7 +53,7 @@ class Equipment:
     def damage_bonus(self):
         bonus = 0
 
-        enchantment = self.enchantments.get('damage_bonus')
+        enchantment = self.enchantments.get("damage_bonus")
         if enchantment:
             bonus += enchantment
 

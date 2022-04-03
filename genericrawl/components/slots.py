@@ -55,7 +55,6 @@ class Slots:
 
         return bonus
 
-
     def toggle_equip(self, item):
         if not item.equipment:
             return False
@@ -68,14 +67,14 @@ class Slots:
         if equipped:
             if equipped is item:
                 self.slot_dict[slot] = None
-                results['unequipped'] = item
+                results["unequipped"] = item
             else:
-                results['unequipped'] = equipped
+                results["unequipped"] = equipped
                 self.slot_dict[slot] = item
-                results['equipped'] = item
+                results["equipped"] = item
         else:
             self.slot_dict[slot] = item
-            results['equipped'] = item
+            results["equipped"] = item
 
         return results
 

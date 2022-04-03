@@ -9,7 +9,13 @@ def generate_facing():
 
 
 class Sight:
-    def __init__(self, fov_radius=10, fov_span=radians(135), facing=generate_facing(), degrees=False):
+    def __init__(
+        self,
+        fov_radius=10,
+        fov_span=radians(135),
+        facing=generate_facing(),
+        degrees=False,
+    ):
         self.fov_radius = fov_radius
         if degrees:
             self.fov_span = radians(fov_span)
@@ -25,8 +31,17 @@ class Sight:
         return True
 
     def get_fov(self, fov_map, memory=None):
-        compute_fov(fov_map, self.owner.x, self.owner.y, self.fov_radius, memory=memory)
+        compute_fov(
+            fov_map, self.owner.x, self.owner.y, self.fov_radius, memory=memory
+        )
 
     def get_fov_angled(self, fov_map, memory=None):
-        compute_fov_angled(fov_map, self.owner.x, self.owner.y, self.fov_radius, self.facing, self.fov_span,
-                           memory=memory)
+        compute_fov_angled(
+            fov_map,
+            self.owner.x,
+            self.owner.y,
+            self.fov_radius,
+            self.facing,
+            self.fov_span,
+            memory=memory,
+        )

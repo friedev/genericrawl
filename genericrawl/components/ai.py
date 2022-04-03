@@ -14,12 +14,18 @@ class BasicMonster:
 
         if dist < 2:
             # Attack the player, even if the entity can't see
-            return self.owner.fighter.attack_entity(player.fighter, target_is_player=True)
+            return self.owner.fighter.attack_entity(
+                player.fighter, target_is_player=True
+            )
 
         results = {}
         given_fov_map = fov_map is not None
 
-        if self.owner.sight and dist <= self.owner.sight.fov_radius or self.remaining_chase_turns > 0:
+        if (
+            self.owner.sight
+            and dist <= self.owner.sight.fov_radius
+            or self.remaining_chase_turns > 0
+        ):
             owner_x = self.owner.x
             owner_y = self.owner.y
             player_x = player.x
@@ -31,7 +37,9 @@ class BasicMonster:
             else:
                 # This second variable is necessary as creating another variable called fov_map might shadow the
                 # parameter rather than changing its value
-                fov_map = game_map.generate_fov_map_with_entities([self.owner, player])
+                fov_map = game_map.generate_fov_map_with_entities(
+                    [self.owner, player]
+                )
 
             if self.clairvoyant:
                 # Clairvoyant entities can always sense the player when they're nearby
@@ -74,20 +82,28 @@ class BasicMonster:
                 tcod.path_delete(path)
 
             if given_fov_map:
-                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
-                tcod.map_set_properties(fov_map, player.x, player.y, True, False)
+                tcod.map_set_properties(
+                    fov_map, self.owner.x, self.owner.y, True, False
+                )
+                tcod.map_set_properties(
+                    fov_map, player.x, player.y, True, False
+                )
             else:
                 tcod.map_delete(fov_map)
         else:
             if given_fov_map:
                 # Remove the entity from the given FOV map
-                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, True)
+                tcod.map_set_properties(
+                    fov_map, self.owner.x, self.owner.y, True, True
+                )
 
             # Wander around aimlessly
             self.owner.move(randint(-1, 1), randint(-1, 1), game_map)
 
             if given_fov_map:
                 # Add the entity to the given FOV map
-                tcod.map_set_properties(fov_map, self.owner.x, self.owner.y, True, False)
+                tcod.map_set_properties(
+                    fov_map, self.owner.x, self.owner.y, True, False
+                )
 
         return results

@@ -51,7 +51,7 @@ class Fighter:
             bonus += self.owner.slots.attack_bonus
 
         for effect in self.owner.status_effects:
-            attack_bonus = effect.properties.get('attack_bonus')
+            attack_bonus = effect.properties.get("attack_bonus")
             if attack_bonus:
                 bonus += attack_bonus
 
@@ -65,7 +65,7 @@ class Fighter:
             bonus += self.owner.slots.defense_bonus
 
         for effect in self.owner.status_effects:
-            defense_bonus = effect.properties.get('defense_bonus')
+            defense_bonus = effect.properties.get("defense_bonus")
             if defense_bonus:
                 bonus += defense_bonus
 
@@ -79,7 +79,7 @@ class Fighter:
             bonus += self.owner.slots.damage_bonus
 
         for effect in self.owner.status_effects:
-            damage_bonus = effect.properties.get('damage_bonus')
+            damage_bonus = effect.properties.get("damage_bonus")
             if damage_bonus:
                 bonus += damage_bonus
 
@@ -89,12 +89,26 @@ class Fighter:
         attack_hit = calc_hit_chance(self.attack, target.defense)
 
         if not attack_hit:
-            return {'attack_message': Message("{0} blocks {1}'s attack.".format(target.owner.definite_name.capitalize(),
-                    self.owner.definite_name), tcod.light_gray)}
+            return {
+                "attack_message": Message(
+                    "{0} blocks {1}'s attack.".format(
+                        target.owner.definite_name.capitalize(),
+                        self.owner.definite_name,
+                    ),
+                    tcod.light_gray,
+                )
+            }
 
         if self.damage <= 0:
-            return {'attack_message': Message('{0} attacks {1} but does no damage.'.format(
-                self.owner.definite_name.capitalize(), target.owner.definite_name), tcod.light_gray)}
+            return {
+                "attack_message": Message(
+                    "{0} attacks {1} but does no damage.".format(
+                        self.owner.definite_name.capitalize(),
+                        target.owner.definite_name,
+                    ),
+                    tcod.light_gray,
+                )
+            }
 
         results = target.take_damage(self.damage)
 
@@ -105,20 +119,26 @@ class Fighter:
         else:
             color = tcod.white
 
-        results['attack_message'] = Message('{0} attacks {1} for {2} HP.'.format(
-            self.owner.definite_name.capitalize(), target.owner.definite_name, results.get('damage')), color)
+        results["attack_message"] = Message(
+            "{0} attacks {1} for {2} HP.".format(
+                self.owner.definite_name.capitalize(),
+                target.owner.definite_name,
+                results.get("damage"),
+            ),
+            color,
+        )
 
         return results
 
     def take_damage(self, amount, randomize=True):
         if randomize:
             amount = calc_damage(amount)
-        results = {'damage': amount}
+        results = {"damage": amount}
 
         self.hp = max(self.hp - amount, 0)
 
         if self.hp == 0:
-            results['dead'] = [self.owner]
+            results["dead"] = [self.owner]
 
         return results
 

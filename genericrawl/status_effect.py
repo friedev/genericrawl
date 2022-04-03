@@ -17,13 +17,21 @@
 
 def damage(*args, **kwargs):
     entity = args[0]
-    amount = kwargs.get('amount')
+    amount = kwargs.get("amount")
 
     return entity.fighter.take_damage(amount)
 
 
 class StatusEffect:
-    def __init__(self, name, properties, effect_function, continuous=True, hidden=False, **kwargs):
+    def __init__(
+        self,
+        name,
+        properties,
+        effect_function,
+        continuous=True,
+        hidden=False,
+        **kwargs,
+    ):
         self.name = name
         self.properties = properties
         self.effect_function = effect_function
