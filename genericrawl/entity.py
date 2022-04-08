@@ -51,25 +51,24 @@ class Entity:
         self.update_components_owner()
 
         for component in Components:
-            setattr(self, component.value, self.components.get(component.value))
+            setattr(
+                self, component.value, self.components.get(component.value)
+            )
 
     @property
     def definite_name(self):
         if self.is_name_proper:
             return self.name
-        else:
-            return "the " + self.name
+        return "the " + self.name
 
     @property
     def indefinite_name(self):
         if self.is_name_proper:
             return self.name
-        else:
-            # Chooses the right indefinite article if the name starts with a vowel
-            if self.name[0].lower() in "aeiou":
-                return "an " + self.name
-            else:
-                return "a " + self.name
+        # Chooses the right indefinite article if the name starts with a vowel
+        if self.name[0].lower() in "aeiou":
+            return "an " + self.name
+        return "a " + self.name
 
     def update_components_owner(self):
         for component in self.components.values():
@@ -110,17 +109,16 @@ class Entity:
                 expired.append(effect)
                 results.update(effect.stop(self))
 
-        for effect in expired:
+        for effect in expired.copy():
             self.status_effects.pop(effect)
             if effect.hidden:
                 expired.remove(effect)
 
         if expired:
+            effect_str = join_list([effect.name for effect in expired])
             return {
                 "effect_message": Message(
-                    "You are no longer {0}.".format(
-                        join_list([effect.name for effect in expired])
-                    ),
+                    f"You are no longer {effect_str}.",
                     tcod.yellow,
                 )
             }
@@ -131,6 +129,7 @@ class Entity:
         for effect in self.status_effects.keys():
             if effect.name == name:
                 return effect
+        return None
 
     def kill(self, is_player=False):
         self.char = "%"
@@ -139,9 +138,8 @@ class Entity:
         if is_player:
             death_message = Message("You die...", tcod.red)
         else:
-            death_message = Message(
-                "{0} dies!".format(self.definite_name.capitalize()), tcod.green
-            )
+            enemy_str = self.definite_name.capitalize()
+            death_message = Message(f"{enemy_str} dies!", tcod.green)
             self.render_order = RenderOrder.CORPSE
 
         if self.is_name_proper:

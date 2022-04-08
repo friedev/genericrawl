@@ -9,9 +9,8 @@ def handle_mouse(mouse):
 
     if mouse.lbutton_pressed:
         return {"left_click": (x, y)}
-    elif mouse.rbutton_pressed:
+    if mouse.rbutton_pressed:
         return {"right_click": (x, y)}
-
     return {}
 
 

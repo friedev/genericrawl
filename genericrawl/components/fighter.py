@@ -7,10 +7,7 @@ from ..game_messages import Message
 
 def calc_hit_chance(attack, defense):
     if attack <= 0:
-        if defense <= 0:
-            return bool(getrandbits(1))
-        else:
-            return False
+        return False if defense > 0 else bool(getrandbits(1))
 
     if defense <= 0:
         return True
@@ -88,13 +85,13 @@ class Fighter:
     def attack_entity(self, target, is_player=False, target_is_player=False):
         attack_hit = calc_hit_chance(self.attack, target.defense)
 
+        defender = target.owner.definite_name
+        attacker = self.owner.definite_name
+
         if not attack_hit:
             return {
                 "attack_message": Message(
-                    "{0} blocks {1}'s attack.".format(
-                        target.owner.definite_name.capitalize(),
-                        self.owner.definite_name,
-                    ),
+                    f"{defender} blocks {attacker}'s attack.".capitalize(),
                     tcod.light_gray,
                 )
             }
@@ -102,10 +99,9 @@ class Fighter:
         if self.damage <= 0:
             return {
                 "attack_message": Message(
-                    "{0} attacks {1} but does no damage.".format(
-                        self.owner.definite_name.capitalize(),
-                        target.owner.definite_name,
-                    ),
+                    (
+                        f"{attacker} attacks {defender} but does no damage."
+                    ).capitalize(),
                     tcod.light_gray,
                 )
             }
@@ -120,11 +116,9 @@ class Fighter:
             color = tcod.white
 
         results["attack_message"] = Message(
-            "{0} attacks {1} for {2} HP.".format(
-                self.owner.definite_name.capitalize(),
-                target.owner.definite_name,
-                results.get("damage"),
-            ),
+            (
+                f"{attacker} attacks {defender} for {results['damage']} HP."
+            ).capitalize(),
             color,
         )
 

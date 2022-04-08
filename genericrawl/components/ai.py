@@ -33,16 +33,20 @@ class BasicMonster:
 
             if given_fov_map:
                 tcod.map_set_properties(fov_map, owner_x, owner_y, True, True)
-                tcod.map_set_properties(fov_map, player_x, player_y, True, True)
+                tcod.map_set_properties(
+                    fov_map, player_x, player_y, True, True
+                )
             else:
-                # This second variable is necessary as creating another variable called fov_map might shadow the
-                # parameter rather than changing its value
+                # This second variable is necessary as creating another
+                # variable called fov_map might shadow the parameter rather
+                # than changing its value
                 fov_map = game_map.generate_fov_map_with_entities(
                     [self.owner, player]
                 )
 
             if self.clairvoyant:
-                # Clairvoyant entities can always sense the player when they're nearby
+                # Clairvoyant entities can always sense the player when they're
+                # nearby
                 has_los = True
 
             if has_los is None:
@@ -56,7 +60,8 @@ class BasicMonster:
             chase = has_los
 
             if not has_los and self.remaining_chase_turns > 0:
-                # Entities will continue chasing the player for chase_duration, even if they don't have line of sight
+                # Entities will continue chasing the player for chase_duration,
+                # even if they don't have line of sight
                 chase = True
                 self.remaining_chase_turns -= 1
 

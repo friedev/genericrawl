@@ -4,7 +4,8 @@ import tcod
 def menu(
     console, header, options, width, screen_width, screen_height, selection
 ):
-    # Calculate total height for the header (after auto-wrap) and one line per option
+    # Calculate total height for the header (after auto-wrap) with one line per
+    # option
     header_height = tcod.console_get_height_rect(
         console, 0, 0, width, screen_height, header
     )
@@ -85,15 +86,11 @@ def construct_inventory_options(player):
         item_string = item.name
         if item.equipment:
             if item.equipment.enchantments:
-                item_string = (
-                    "{0}{1} ".format(
-                        "-" if item.equipment.n_enchantments < 0 else "+",
-                        abs(item.equipment.n_enchantments),
-                    )
-                    + item_string
-                )
+                sign = "-" if item.equipment.n_enchantments < 0 else "+"
+                value = abs(item.equipment.n_enchantments)
+                item_string = f"{sign}{value} {item_string}"
 
-            item_string += " [{0}]".format(item.equipment.tier)
+            item_string += f" [{item.equipment.tier}]"
 
             if player.slots.is_equipped(item):
                 item_string += " (equipped)"
@@ -106,11 +103,11 @@ def construct_inventory_options(player):
             else:
                 stacks[item.name] = 1
 
-    for stack in stacks.keys():
+    for stack in stacks:
         amount = stacks.get(stack)
         if amount == 1:
             options.append(stack)
         else:
-            options.append("{0} (x{1})".format(stack, stacks.get(stack)))
+            options.append(f"{stack} (x{stacks.get(stack)})")
 
     return options

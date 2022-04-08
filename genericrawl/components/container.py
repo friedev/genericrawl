@@ -22,7 +22,7 @@ class Container:
         else:
             results["item_obtained"] = item
             results["pickup_message"] = Message(
-                "You pick up {0}.".format(item.definite_name), tcod.light_blue
+                f"You pick up {item.definite_name}.", tcod.light_blue
             )
 
             self.items.append(item)
@@ -33,3 +33,4 @@ class Container:
         for item in self.items:
             if contains(name, item.name):
                 return item
+        return None

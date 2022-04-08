@@ -6,7 +6,19 @@ import tcod
 from .components.ai import BasicMonster
 from .components.equipment import Equipment
 from .components.fighter import Fighter
-from .components.item import *
+from .components.item import (
+    Item,
+    cancellation,
+    digging,
+    equip,
+    heal,
+    might,
+    pain,
+    protection,
+    replication,
+    teleportation,
+    throw_std,
+)
 from .components.sight import Sight
 from .components.slots import SlotTypes
 from .entity import Entity
@@ -180,7 +192,13 @@ class EntityTemplates(Enum):
         "W", tcod.red, "wyvern", hp=45, attack=13, defense=7, damage=14
     )
     CYCLOPS = create_enemy(
-        "C", tcod.dark_orange, "cyclops", hp=55, attack=9, defense=10, damage=12
+        "C",
+        tcod.dark_orange,
+        "cyclops",
+        hp=55,
+        attack=9,
+        defense=10,
+        damage=12,
     )
     TROLL = create_enemy(
         "T", tcod.darker_gray, "troll", hp=60, attack=7, defense=12, damage=10
@@ -230,10 +248,14 @@ class EntityTemplates(Enum):
     )
     PADDED_MAIL = create_hp_armor("padded mail", tier=6, defense=6, hp=45)
     PLATE_ARMOR = create_def_armor("plate armor", tier=8, defense=12, hp=40)
-    LAMELLAR_ARMOR = create_hp_armor("lamellar armor", tier=8, defense=8, hp=60)
+    LAMELLAR_ARMOR = create_hp_armor(
+        "lamellar armor", tier=8, defense=8, hp=60
+    )
 
     # Runes
-    ROCK = create_rune(tcod.darker_gray, "rock", None, throw_function=throw_std)
+    ROCK = create_rune(
+        tcod.darker_gray, "rock", None, throw_function=throw_std
+    )
     RUNE_HEALING = create_rune(
         tcod.green,
         "rune of healing",

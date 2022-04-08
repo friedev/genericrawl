@@ -58,7 +58,9 @@ def compute_fov_angled(
                 y_rel = yi - y
                 tile_angle = atan2(y_rel, x_rel)
 
-                if swap_angles == (lesser_angle <= tile_angle <= greater_angle):
+                if swap_angles == (
+                    lesser_angle <= tile_angle <= greater_angle
+                ):
                     tcod.map_set_in_fov(fov_map, xi, yi, False)
                 elif memory is not None:
                     # Must use "is not None" because [] also evaluates to False
@@ -68,7 +70,7 @@ def compute_fov_angled(
     memory[x][y] = True
 
     if reveal_sides:
-        # Ideal, angle-based approach (some issues with signs result in incorrect
+        # Ideal, angle-based approach (some issues with signs)
         # left_angle = angle - (pi / 2)
         # right_angle = angle + (pi / 2)
         #

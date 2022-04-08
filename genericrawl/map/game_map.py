@@ -1,14 +1,23 @@
+from random import choice
+
 import tcod
 
-from ..components.item import *
 from ..entity_templates import (
     ENEMY_WEIGHTS,
     weighted_choice,
     get_weights_for_level,
     ITEM_WEIGHTS,
 )
-from .dungeon_generator import *
-from .tile import int_to_tile_map, Tiles
+from .dungeon_generator import dungeonGenerator, CAVE_WALL, EMPTY
+from .tile import (
+    int_to_tile_map,
+    Tiles,
+    CAVE_FLOOR,
+    CORRIDOR_FLOOR,
+    CORRIDOR_WALL,
+    ROOM_FLOOR,
+    STAIRS,
+)
 
 
 def generate_dungeon(**kwargs):
@@ -56,7 +65,8 @@ def generate_dungeon(**kwargs):
         for y in range(generator.height):
             grid_copy[x + 1][y + 1] = generator.grid[x][y]
 
-    # Expand all room floors by 1 tile to fill doorways, recording room floors at the same time
+    # Expand all room floors by 1 tile to fill doorways, recording room floors
+    # at the same time
     floors = []
     for x in range(generator.width):
         for y in range(generator.height):
@@ -76,7 +86,7 @@ def generate_dungeon(**kwargs):
                 if generator.grid[x][y] is CAVE_FLOOR:
                     floors.append((x, y))
 
-    for i in range(kwargs.get("stairs")):
+    for _ in range(kwargs.get("stairs")):
         stair_x, stair_y = choice(floors)
         floors.remove((stair_x, stair_y))
         grid_copy[stair_x + 1][stair_y + 1] = STAIRS
@@ -127,7 +137,7 @@ def generate_caves(**kwargs):
             ):
                 floors.append((x, y))
 
-    for i in range(kwargs.get("stairs")):
+    for _ in range(kwargs.get("stairs")):
         stair_x, stair_y = choice(floors)
         floors.remove((stair_x, stair_y))
         grid_copy[stair_x + 1][stair_y + 1] = STAIRS
@@ -377,7 +387,8 @@ class GameMap:
             for y in range(generator.height):
                 grid_copy[x + 1][y + 1] = generator.grid[x][y]
 
-        # Expand all room floors by 1 tile to fill doorways, recording room floors at the same time
+        # Expand all room floors by 1 tile to fill doorways, recording room
+        # floors at the same time
         room_floors = []
         for x in range(generator.width):
             for y in range(generator.height):
@@ -409,8 +420,9 @@ class GameMap:
         # Unoccupied tiles refers to open tiles with no enemies in them
         unoccupied_tiles = open_tiles.copy()
         n_enemies = int(len(open_tiles) / tiles_per_enemy)
-        for i in range(n_enemies):
-            # The tile in which this entity is placed will no longer be unoccupied
+        for _ in range(n_enemies):
+            # The tile in which this entity is placed will no longer be
+            # unoccupied
             tile = choice(unoccupied_tiles)
             unoccupied_tiles.remove(tile)
 
@@ -418,7 +430,7 @@ class GameMap:
             self.entities.append(enemy)
 
         n_items = int(len(open_tiles) / tiles_per_item)
-        for i in range(n_items):
+        for _ in range(n_items):
             # The tile in which this item is placed will no longer be open
             tile = choice(open_tiles)
             open_tiles.remove(tile)
@@ -489,14 +501,15 @@ class GameMap:
                         continue
                     tile_entities.append(entity)
             return tile_entities
-        elif blocking_only:
+
+        if blocking_only:
             tile_entities = []
             for entity in entity_map[x][y]:
                 if entity.blocks:
                     tile_entities.append(entity)
             return tile_entities
-        else:
-            return entity_map[x][y]
+
+        return entity_map[x][y]
 
     def find_open_tile(
         self, tile_type=None, include_entities=True, entity_map=None
@@ -523,7 +536,8 @@ class GameMap:
 
         return open_tiles
 
-    # Returns a 3D list, where the first two dimensions are the same as the game map
+    # Returns a 3D list, where the first two dimensions are the same as the
+    # game map
     # The third dimension is a list of the entities in that tile
     def generate_entity_map(self):
         entity_map = [

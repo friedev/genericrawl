@@ -1,11 +1,22 @@
 from enum import Enum
 
-from .dungeon_generator import *
+from .dungeon_generator import (
+    EMPTY,
+    ROOM_FLOOR,
+    CORRIDOR_FLOOR,
+    DOOR,
+    DEADEND,
+    ROOM_WALL,
+    CORRIDOR_WALL,
+    CAVE_WALL,
+    CAVE_FLOOR,
+    STAIRS,
+)
 
 
 class Tile:
     """
-    A tile on a map. It may or may not be blocked, and may or may not block sight.
+    A map tile which may or may not be blocked, and may or may not block sight.
     """
 
     def __init__(self, blocks, blocks_sight=None, character=None):

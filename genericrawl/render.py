@@ -6,7 +6,7 @@ from tcod import Color
 from .fov import distance
 from .game_messages import join_list
 from .game_states import GameStates
-from .menu import *
+from .menu import inventory_menu
 
 
 class RenderOrder(Enum):
@@ -35,7 +35,7 @@ def render_bar(
         y,
         tcod.BKGND_NONE,
         tcod.CENTER,
-        "{0}: {1}/{2}".format(name, value, maximum),
+        f"{name}: {value}/{maximum}",
     )
 
 
@@ -127,7 +127,11 @@ def render_all(
                 )
                 tcod.console_put_char(console, x, y, " ")
                 tcod.console_set_char_background(
-                    console, x, y, color_scheme.background[None], tcod.BKGND_SET
+                    console,
+                    x,
+                    y,
+                    color_scheme.background[None],
+                    tcod.BKGND_SET,
                 )
 
     # Sort entities by their render order
@@ -149,7 +153,9 @@ def render_all(
 
     if key_cursor:
         tcod.console_set_default_foreground(console, tcod.white)
-        tcod.console_put_char(console, center_x, center_y, "X", tcod.BKGND_NONE)
+        tcod.console_put_char(
+            console, center_x, center_y, "X", tcod.BKGND_NONE
+        )
 
     tcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
 
@@ -219,7 +225,7 @@ def render_all(
         2,
         tcod.BKGND_NONE,
         tcod.LEFT,
-        "Attack:  {0}".format(player.fighter.attack),
+        f"Attack:  {player.fighter.attack}",
     )
     tcod.console_print_ex(
         panel,
@@ -227,7 +233,7 @@ def render_all(
         3,
         tcod.BKGND_NONE,
         tcod.LEFT,
-        "Defense: {0}".format(player.fighter.defense),
+        f"Defense: {player.fighter.defense}",
     )
     tcod.console_print_ex(
         panel,
@@ -235,9 +241,8 @@ def render_all(
         4,
         tcod.BKGND_NONE,
         tcod.LEFT,
-        "Damage:  {0}".format(player.fighter.damage),
+        f"Damage:  {player.fighter.damage}",
     )
-
     tcod.console_set_default_foreground(panel, tcod.yellow)
     tcod.console_print_ex(
         panel,
@@ -245,17 +250,17 @@ def render_all(
         5,
         tcod.BKGND_NONE,
         tcod.LEFT,
-        "Dungeon Level: {0}".format(game_map.dungeon_level),
+        f"Dungeon Level: {game_map.dungeon_level}",
     )
 
     tcod.console_blit(panel, 0, 0, panel_width, panel_height, 0, 0, panel_y)
 
     if game_state == GameStates.INVENTORY:
+        item_count = len(player.container.items)
+        capacity = player.container.capacity
         inventory_menu(
             console,
-            "Inventory ({0}/{1})\n".format(
-                len(player.container.items), player.container.capacity
-            ),
+            f"Inventory ({item_count}/{capacity})\n",
             player,
             50,
             screen_width,
@@ -291,9 +296,9 @@ def apply_fov_gradient(
         int(brightness_range * (tile_distance / fov_radius)) - max_brightness
     )
 
-    # If the color modifier is above zero, the tile is darkened, otherwise it is lightened
+    # If the color modifier is above zero, the tile is darkened, otherwise it
+    # is lightened
     if color_mod >= 0:
         return tile_color.__sub__(Color(color_mod, color_mod, color_mod))
-    else:
-        color_mod = -color_mod
-        return tile_color.__add__(Color(color_mod, color_mod, color_mod))
+    color_mod = -color_mod
+    return tile_color.__add__(Color(color_mod, color_mod, color_mod))

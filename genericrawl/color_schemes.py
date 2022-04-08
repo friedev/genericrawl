@@ -48,7 +48,8 @@ def color_dict_change_brightness(color_dict, mod):
     return copy
 
 
-# A convenience method that allows color dicts to be modified when initialized in the ColorSchemes enum
+# A convenience method that allows color dicts to be modified when initialized
+# in the ColorSchemes enum
 def set_tile_color(color_dict, tile, color):
     copy = color_dict.copy()
     copy[tile] = color

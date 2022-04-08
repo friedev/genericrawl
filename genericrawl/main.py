@@ -10,11 +10,13 @@ from .components.fighter import Fighter
 from .components.sight import Sight
 from .components.slots import Slots
 from .entity import Entity
-from .fov import *
+
+# from .fov import
 from .game_messages import MessageLog, Message, join_list
 from .game_states import GameStates
 from .input import InputSchemes, handle_mouse
-from .map.game_map import GameMap, LEVEL_CONFIGURATIONS, STAIRS
+from .map.game_map import GameMap, LEVEL_CONFIGURATIONS
+from .map.tile import STAIRS
 from .menu import construct_inventory_options
 from .render import render_all, clear_all, RenderOrder
 
@@ -23,7 +25,7 @@ from .render import render_all, clear_all, RenderOrder
 CONFIG_DIR = path.join(
     environ.get("APPDATA")
     or environ.get("XDG_CONFIG_HOME")
-    or path.join(os.environ["HOME"], ".config"),
+    or path.join(environ["HOME"], ".config"),
     "genericrawl",
 )
 OPTIONS_PATH = path.join(CONFIG_DIR, "options.json")
@@ -59,6 +61,7 @@ def get_scheme(name, scheme_enum):
     for scheme in scheme_enum:
         if scheme.value.name == name:
             return scheme
+    return None
 
 
 def cycle_scheme(scheme, scheme_enum, direction_input):
@@ -68,10 +71,9 @@ def cycle_scheme(scheme, scheme_enum, direction_input):
 
     if new_index < 0:
         return scheme_list[len(scheme_list) - 1]
-    elif new_index >= len(scheme_list):
+    if new_index >= len(scheme_list):
         return scheme_list[0]
-    else:
-        return scheme_list[new_index]
+    return scheme_list[new_index]
 
 
 def get_look_message(x, y, game_map, fov_map, player):
@@ -116,7 +118,9 @@ def main():
     message_height = panel_height - 1
 
     with importlib.resources.as_file(
-        importlib.resources.files("genericrawl.data").joinpath("arial10x10.png")
+        importlib.resources.files("genericrawl.data").joinpath(
+            "arial10x10.png"
+        )
     ) as font_path:
         tcod.console_set_custom_font(
             str(font_path), tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD
@@ -237,7 +241,7 @@ def play_game(
         look = action.get("look")
         wait = action.get("wait")
         restart = action.get("restart")
-        exit = action.get("exit")
+        exit_action = action.get("exit")
         fullscreen = action.get("fullscreen")
         color_scheme_input = action.get("color_scheme")
         input_scheme_input = action.get("input_scheme")
@@ -295,16 +299,15 @@ def play_game(
                         )
                         entities_at_tile.remove(player)
                         if entities_at_tile:
+                            entity_str = join_list(
+                                [
+                                    entity.indefinite_name
+                                    for entity in entities_at_tile
+                                ]
+                            )
                             message_log.add_message(
                                 Message(
-                                    "You see {0}.".format(
-                                        join_list(
-                                            [
-                                                entity.indefinite_name
-                                                for entity in entities_at_tile
-                                            ]
-                                        )
-                                    ),
+                                    f"You see {entity_str}.",
                                     tcod.light_gray,
                                 )
                             )
@@ -363,7 +366,8 @@ def play_game(
 
                                 tcod.console_clear(console)
 
-                # In the event that the player moves into a wall, do not adjust facing
+                # In the event that the player moves into a wall, do not adjust
+                # facing
                 # if face and (not move or moved):
                 #     player.sight.face(atan2(dy, dx))
                 #     player_acted = True
@@ -410,7 +414,9 @@ def play_game(
                 do_target = True
 
         if pickup and game_state is GameStates.PLAYER_TURN:
-            entities_at_tile = game_map.get_entities_at_tile(player.x, player.y)
+            entities_at_tile = game_map.get_entities_at_tile(
+                player.x, player.y
+            )
             for entity in entities_at_tile:
                 if entity.item:
                     player_results.update(player.container.add_item(entity))
@@ -434,7 +440,7 @@ def play_game(
                 game_map.entities.append(item)
                 message_log.add_message(
                     Message(
-                        "You drop {0}.".format(item.definite_name),
+                        f"You drop {item.definite_name}.",
                         tcod.light_blue,
                     )
                 )
@@ -464,7 +470,8 @@ def play_game(
                 key_cursor = (player.x, player.y)
                 message_log.add_message(
                     Message(
-                        "Left-click or navigate to a tile to throw. Right-click or escape to cancel.",
+                        "Left-click or navigate to a tile to throw. "
+                        "Right-click or escape to cancel.",
                         tcod.light_gray,
                     )
                 )
@@ -492,7 +499,7 @@ def play_game(
         if restart and game_state is GameStates.PLAYER_DEAD:
             return True
 
-        if exit:
+        if exit_action:
             if game_state is GameStates.INVENTORY:
                 game_state = previous_game_state
                 combining = None
@@ -683,7 +690,7 @@ def play_game(
             game_map.entities.remove(item_obtained)
 
         if item_consumed or item_moved:
-            if type(item_consumed) is list:
+            if isinstance(item_consumed, list):
                 for item in item_consumed:
                     player.container.items.remove(item)
 
@@ -730,9 +737,8 @@ def play_game(
                                 message_log.add_message(message)
                                 game_state = GameStates.PLAYER_DEAD
                                 break
-                            else:
-                                message = dead_entity.kill()
-                                message_log.add_message(message)
+                            message = dead_entity.kill()
+                            message_log.add_message(message)
 
                 if game_state is GameStates.PLAYER_DEAD:
                     break

@@ -34,18 +34,18 @@ def equip(*args, **kwargs):
 
     if equipped and unequipped:
         results["use_message"] = Message(
-            "You swap out {0} for {1}.".format(
-                unequipped.definite_name, equipped.definite_name
-            ),
+            f"You swap out {unequipped.definite_name} for "
+            f"{equipped.definite_name}.",
             tcod.light_blue,
         )
     elif equipped:
         results["use_message"] = Message(
-            "You equip {0}.".format(equipped.definite_name), tcod.light_blue
+            f"You equip {equipped.definite_name}.", tcod.light_blue
         )
     elif unequipped:
         results["use_message"] = Message(
-            "You unequip {0}.".format(unequipped.definite_name), tcod.light_blue
+            f"You unequip {unequipped.definite_name}.",
+            tcod.light_blue,
         )
 
     user.fighter.hp = min(user.fighter.hp, user.fighter.max_hp)
@@ -75,16 +75,18 @@ def throw_std(*args, **kwargs):
 
     if amount > 0:
         results["use_message"] = Message(
-            "{0} hits {1} for {2} HP, breaking on impact.".format(
-                item.definite_name.capitalize(), target.definite_name, amount
-            ),
+            (
+                f"{item.definite_name} hits {target.definite_name} for "
+                f"{amount} HP, breaking on impact."
+            ).capitalize(),
             tcod.green,
         )
     else:
         results["use_message"] = Message(
-            "{0} shatters harmlessly against {1}.".format(
-                item.definite_name.capitalize(), target.definite_name
-            ),
+            (
+                f"{item.definite_name} shatters harmlessly against "
+                f"{target.definite_name}."
+            ).capitalize(),
             tcod.yellow,
         )
     return results
@@ -115,10 +117,10 @@ def heal(*args, **kwargs):
                 results.update(
                     {
                         "use_message": Message(
-                            "{0} loses {1} damage.".format(
-                                combine_target.definite_name.capitalize(),
-                                abs(weapon_amount),
-                            ),
+                            (
+                                f"{combine_target.definite_name} loses "
+                                f"{abs(weapon_amount)} damage."
+                            ).capitalize(),
                             tcod.red,
                         )
                     }
@@ -137,10 +139,10 @@ def heal(*args, **kwargs):
                 results.update(
                     {
                         "use_message": Message(
-                            "{0} gains {1} max HP.".format(
-                                combine_target.definite_name.capitalize(),
-                                armor_amount,
-                            ),
+                            (
+                                f"{combine_target.definite_name} gains "
+                                f"{armor_amount} max HP."
+                            ).capitalize(),
                             tcod.green,
                         )
                     }
@@ -148,8 +150,7 @@ def heal(*args, **kwargs):
 
             results.update({"item_consumed": item})
             return results
-        else:
-            return {}
+        return {}
 
     if not throwing:
         target = args[0]
@@ -165,9 +166,11 @@ def heal(*args, **kwargs):
     player_using = target == args[0]
 
     if target.fighter.hp == target.fighter.max_hp:
-        results["use_message"] = Message("The rune has no effect.", tcod.yellow)
+        results["use_message"] = Message(
+            "The rune has no effect.", tcod.yellow
+        )
     else:
-        if type(amount) is float:
+        if isinstance(amount, float):
             actual_amount = int(target.fighter.max_hp * amount)
         else:
             actual_amount = amount
@@ -176,16 +179,14 @@ def heal(*args, **kwargs):
         results["item_consumed"] = item
         if player_using:
             results["use_message"] = Message(
-                "You feel rejuvenated! You recover {0} HP.".format(
-                    amount_healed
-                ),
+                f"You feel rejuvenated! You recover {amount_healed} HP.",
                 tcod.green,
             )
         else:
             results["use_message"] = Message(
-                "{0} recovers {1} HP.".format(
-                    target.definite_name.capitalize(), amount_healed
-                ),
+                (
+                    f"{target.definite_name} recovers {amount_healed} HP."
+                ).capitalize(),
                 tcod.red,
             )
 
@@ -216,10 +217,10 @@ def pain(*args, **kwargs):
                 results.update(
                     {
                         "use_message": Message(
-                            "{0} gains {1} damage.".format(
-                                combine_target.definite_name.capitalize(),
-                                weapon_amount,
-                            ),
+                            (
+                                f"{combine_target.definite_name} gains "
+                                f"{weapon_amount} damage."
+                            ).capitalize(),
                             tcod.green,
                         )
                     }
@@ -238,10 +239,10 @@ def pain(*args, **kwargs):
                 results.update(
                     {
                         "use_message": Message(
-                            "{0} loses {1} max HP.".format(
-                                combine_target.definite_name.capitalize(),
-                                abs(armor_amount),
-                            ),
+                            (
+                                f"{combine_target.definite_name} loses "
+                                f"{abs(armor_amount)} max HP."
+                            ).capitalize(),
                             tcod.red,
                         )
                     }
@@ -249,8 +250,7 @@ def pain(*args, **kwargs):
 
             results.update({"item_consumed": item})
             return results
-        else:
-            return {}
+        return {}
 
     if not throwing:
         target = args[0]
@@ -263,7 +263,7 @@ def pain(*args, **kwargs):
 
     player_using = target == args[0]
 
-    if type(amount) is float:
+    if isinstance(amount, float):
         actual_amount = int(target.fighter.max_hp * amount)
     else:
         actual_amount = amount
@@ -272,14 +272,12 @@ def pain(*args, **kwargs):
     results["item_consumed"] = item
     if player_using:
         results["use_message"] = Message(
-            "You feel a searing pain! You lose {0} HP.".format(actual_amount),
+            f"You feel a searing pain! You lose {actual_amount} HP.",
             tcod.red,
         )
     else:
         results["use_message"] = Message(
-            "{0} loses {1} HP.".format(
-                target.definite_name.capitalize(), actual_amount
-            ),
+            f"{target.definite_name} loses {actual_amount} HP.".capitalize(),
             tcod.green,
         )
 
@@ -311,15 +309,15 @@ def might(*args, **kwargs):
                 ] = weapon_amount
             return {
                 "use_message": Message(
-                    "{0} gains {1} attack.".format(
-                        combine_target.definite_name.capitalize(), weapon_amount
-                    ),
+                    (
+                        f"{combine_target.definite_name} gains "
+                        f"{weapon_amount} attack."
+                    ).capitalize(),
                     tcod.green,
                 ),
                 "item_consumed": item,
             }
-        else:
-            return {}
+        return {}
 
     if not throwing:
         target = args[0]
@@ -332,7 +330,7 @@ def might(*args, **kwargs):
 
     player_using = target == args[0]
 
-    if type(amount) is float:
+    if isinstance(amount, float):
         actual_amount = int(target.fighter.attack * amount)
     else:
         actual_amount = amount
@@ -355,14 +353,14 @@ def might(*args, **kwargs):
     results = {"item_consumed": item}
     if player_using:
         results["use_message"] = Message(
-            "Your muscles grow rapidly! You gain {0} attack.".format(
-                actual_amount
-            ),
+            (
+                f"Your muscles grow rapidly! You gain {actual_amount} attack."
+            ).capitalize(),
             tcod.green,
         )
     else:
         results["use_message"] = Message(
-            "{0} appears stronger.".format(target.definite_name.capitalize()),
+            f"{target.definite_name} appears stronger.".capitalize(),
             tcod.red,
         )
 
@@ -394,15 +392,15 @@ def protection(*args, **kwargs):
                 ] = armor_amount
             return {
                 "use_message": Message(
-                    "{0} gains {1} defense.".format(
-                        combine_target.definite_name.capitalize(), armor_amount
-                    ),
+                    (
+                        f"{combine_target.definite_name} gains "
+                        f"{armor_amount} defense."
+                    ).capitalize(),
                     tcod.green,
                 ),
                 "item_consumed": item,
             }
-        else:
-            return {}
+        return {}
 
     if not throwing:
         target = args[0]
@@ -415,7 +413,7 @@ def protection(*args, **kwargs):
 
     player_using = target == args[0]
 
-    if type(amount) is float:
+    if isinstance(amount, float):
         actual_amount = int(target.fighter.defense * amount)
     else:
         actual_amount = amount
@@ -438,16 +436,12 @@ def protection(*args, **kwargs):
     results = {"item_consumed": item}
     if player_using:
         results["use_message"] = Message(
-            "Your body feels tougher! You gain {0} defense.".format(
-                actual_amount
-            ),
+            f"Your body feels tougher! You gain {actual_amount} defense.",
             tcod.green,
         )
     else:
         results["use_message"] = Message(
-            "{0} appears more resilient.".format(
-                target.definite_name.capitalize()
-            ),
+            f"{target.definite_name} appears more resilient.".capitalize(),
             tcod.red,
         )
 
@@ -465,9 +459,9 @@ def teleportation(*args, **kwargs):
         x, y = game_map.find_open_tile()
         return {
             "use_message": Message(
-                "{0} suddenly vanishes.".format(
-                    combine_target.definite_name.capitalize()
-                ),
+                (
+                    f"{combine_target.definite_name} suddenly vanishes."
+                ).capitalize(),
                 tcod.yellow,
             ),
             "item_consumed": item,
@@ -483,9 +477,7 @@ def teleportation(*args, **kwargs):
         if not target:
             return {
                 "use_message": Message(
-                    "{0} suddenly vanishes.".format(
-                        item.definite_name.capitalize()
-                    ),
+                    f"{item.definite_name} suddenly vanishes.".capitalize(),
                     tcod.magenta,
                 ),
                 "item_consumed": item,
@@ -504,7 +496,7 @@ def teleportation(*args, **kwargs):
         results["recompute_fov"] = True
     else:
         results["use_message"] = Message(
-            "{0} suddenly vanishes.".format(target.definite_name.capitalize()),
+            f"{target.definite_name} suddenly vanishes.".capitalize(),
             tcod.yellow,
         )
 
@@ -521,9 +513,9 @@ def digging(*args, **kwargs):
         combine_target = kwargs.get("combine_target")
         return {
             "use_message": Message(
-                "{0} crumbles into dust.".format(
-                    combine_target.definite_name.capitalize()
-                ),
+                (
+                    f"{combine_target.definite_name} crumbles into dust."
+                ).capitalize(),
                 tcod.orange,
             ),
             "item_consumed": [item, combine_target],
@@ -551,9 +543,9 @@ def digging(*args, **kwargs):
 
             return {
                 "use_message": Message(
-                    "The walls collapse around the {0}.".format(
-                        item.definite_name
-                    ),
+                    (
+                        f"The walls collapse around the {item.definite_name}."
+                    ).capitalize(),
                     tcod.orange,
                 ),
                 "item_consumed": item,
@@ -572,7 +564,7 @@ def digging(*args, **kwargs):
         results["next_level"] = True
     else:
         results["use_message"] = Message(
-            "The ground beneath {0} collapses.".format(target.definite_name),
+            f"The ground beneath {target.definite_name} collapses.",
             tcod.orange,
         )
         game_map.entities.remove(target)
@@ -592,10 +584,10 @@ def replication(*args, **kwargs):
         player.container.items.append(deepcopy(combine_target))
         return {
             "use_message": Message(
-                "{0} morphs into {1}.".format(
-                    item.definite_name.capitalize(),
-                    combine_target.indefinite_name,
-                ),
+                (
+                    f"{item.definite_name} morphs into "
+                    f"{combine_target.indefinite_name}."
+                ).capitalize(),
                 tcod.yellow,
             ),
             "item_consumed": item,
@@ -634,9 +626,9 @@ def replication(*args, **kwargs):
 
         if clone.x != target.x or clone.y != target.y:
             results["use_message"] = Message(
-                "{0} morphs into a hostile adventurer!".format(
-                    item.definite_name.capitalize()
-                ),
+                (
+                    f"{item.definite_name} morphs into a hostile adventurer!"
+                ).capitalize(),
                 tcod.yellow,
             )
         else:
@@ -656,9 +648,10 @@ def replication(*args, **kwargs):
 
         if clone.x != target.x or clone.y != target.y:
             results["use_message"] = Message(
-                "{0} morphs into {1}!".format(
-                    item.definite_name.capitalize(), target.indefinite_name
-                ),
+                (
+                    f"{item.definite_name} morphs into "
+                    f"{target.indefinite_name}!"
+                ).capitalize(),
                 tcod.yellow,
             )
         else:
@@ -684,8 +677,9 @@ def cancellation(*args, **kwargs):
             combine_target.equipment.n_enchantments = 0
             return {
                 "use_message": Message(
-                    "The glow of enchantment fades from {0}.".format(
-                        combine_target.definite_name
+                    (
+                        "The glow of enchantment fades from "
+                        f"{combine_target.definite_name}."
                     ),
                     tcod.yellow,
                 ),
@@ -714,16 +708,14 @@ def cancellation(*args, **kwargs):
             )
         else:
             results["use_message"] = Message(
-                "{0} returns to normal.".format(
-                    target.definite_name.capitalize()
-                ),
+                f"{target.definite_name} returns to normal.".capitalize(),
                 tcod.yellow,
             )
     else:
         results = {
             "item_consumed": item,
             "use_message": Message(
-                "{0} has no effect.".format(item.definite_name.capitalize()),
+                f"{item.definite_name} has no effect.".capitalize(),
                 tcod.yellow,
             ),
         }
@@ -749,16 +741,14 @@ class Item:
 
         if kwargs.get("combining") and self.combine_function:
             return self.combine_function(user, self.owner, game_map, **kwargs)
-        elif kwargs.get("throwing") and self.throw_function:
+        if kwargs.get("throwing") and self.throw_function:
             return self.throw_function(user, self.owner, game_map, **kwargs)
-        elif self.use_function:
+        if self.use_function:
             return self.use_function(user, self.owner, game_map, **kwargs)
 
         return {
             "use_message": Message(
-                "{0} cannot be used".format(
-                    self.owner.definite_name.capitalize()
-                ),
+                f"{self.owner.definite_name} cannot be used.".capitalize(),
                 tcod.yellow,
             )
         }
