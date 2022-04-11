@@ -744,7 +744,3 @@ def play_game(
                     break
             else:
                 game_state = GameStates.PLAYER_TURN
-
-
-if __name__ == "__main__":
-    main()
