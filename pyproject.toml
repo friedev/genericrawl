@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "genericrawl"
-authors = [{name = "Aaron Friesen", email = "maugrift@maugrift.com"}]
+authors = [{name = "Aaron Friesen"}]
 readme = "README.md"
 license = {file = "LICENSE.txt"}
 classifiers = ["License :: OSI Approved :: MIT License"]
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.urls]
-Home = "https://github.com/Maugrift/genericrawl"
+Home = "https://frie.dev/genericrawl"
 
 [project.scripts]
 genericrawl = "genericrawl.main:main"
