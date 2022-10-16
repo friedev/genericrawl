@@ -1,19 +1,19 @@
 # GeneriCrawl
 
-A simple roguelike made in Python with [libtcod](https://github.com/libtcod/python-tcod) as part of the 2018 [r/roguelikedev Does The Complete Roguelike Tutorial](https://redd.it/8ql895) event.
+A simple roguelike made in Python with [tcod](https://github.com/libtcod/python-tcod) as part of the 2018 [r/roguelikedev Does The Complete Roguelike Tutorial](https://redd.it/8ql895) event.
 Can you reach the bottom floor of the dungeon in one piece?
 
 ## Features
 
-- 15 enemies, 15 weapons, 8 pieces of armor, 5 runes, and 10 dungeon levels.
-	- Runes can be consumed, thrown, or used for enchanting.
-	- Levels are divided into 3 distinct areas: the dungeon, the caves, and the labyrinth.
-	- Levels vary in size, with some containing over 8,000 tiles.
-- A damage calculation system based on only 4 stats: HP, attack, defense, and damage.
-	- Attack and defense determine hit chance, while damage is the full damage dealt on a hit.
-- AI that will start chasing you on sight, but can be escaped by breaking line of sight for long enough.
-- A focus on gameplay with as little tedium as possible.
-- Multiple color schemes and input schemes that can be changed while in-game (see below).
+- 15 enemies, 15 weapons, 8 pieces of armor, 5 runes, and 10 dungeon levels
+	- Runes can be consumed, thrown, or used for enchanting
+	- Levels are divided into 3 distinct areas: the dungeon, the caves, and the labyrinth
+	- Levels vary in size, with some containing over 8,000 tiles
+- A combat system with 4 stats: HP, attack, defense, and damage
+	- Attack and defense determine hit chance
+	- Damage is the approximate damage dealt on a hit
+- AI that will start chasing you on sight, but can be escaped by breaking line of sight for long enough
+- Multiple color schemes and input schemes that can be changed while in-game
 
 ## Installation
 
@@ -60,11 +60,11 @@ Also note that, for all movement schemes, you can press the center key to wait a
 Recommended for players with a number pad.
 
 ```
-7  8  9
- \ | /
-4--5--6
- / | \
-1  2  3
+7 8 9
+ \|/
+4-5-6
+ /|\
+1 2 3
 ```
 
 - `i`: Open inventory.
@@ -76,16 +76,16 @@ Recommended for players with a number pad.
 - `t`: While in the inventory, throw the currently selected item.
 - `l`: Navigate to a tile to see its contents and pan the view.
 
-#### VI Keys
+#### vi
 
-Recommended for vim users.
+Recommended for vi users.
 
 ```
-y  k  u
- \ | /
-h--.--l
- / | \
-n  j  n
+Y K U
+ \|/
+H-.-L
+ /|\
+N J N
 ```
 
 - `i`: Open inventory.
@@ -97,16 +97,16 @@ n  j  n
 - `t`: While in the inventory, throw the currently selected item.
 - `;`: Navigate to a tile to see its contents and pan the view.
 
-#### Left-Hand
+#### Left-hand
 
-If you don't have a number pad, aren't experienced with VI, or want to use the mouse more, this control scheme is for you.
+Recommended if you don't have a number pad, aren't experienced with vi, or want to use the mouse more.
 
 ```
-Q  W  E
- \ | /
-A--S--D
- / | \
-Z  X  C
+Q W E
+ \|/
+A-S-D
+ /|\
+Z X C
 ```
 
 - `tab`: Open inventory.
@@ -118,7 +118,11 @@ Z  X  C
 - `t`: While in the inventory, throw the currently selected item.
 - `v`: Navigate to a tile to see its contents and pan the view.
 
+## Credits
+
+GeneriCrawl was created by [Aaron Friesen](https://frie.dev) with the help of the [tcod Roguelike Tutorial](https://www.rogueliketutorials.com).
+
 ## Contributing
 
-GeneriCrawl is no longer in development, and I do not intend to accept pull requests.
+GeneriCrawl is no longer in development, and I do not intend to accept patches for new features.
 However, GeneriCrawl is permissively licensed, so if you want to add your own features, feel free to fork the repo or just borrow parts of the code (subject to the license terms in `LICENSE.txt`).
